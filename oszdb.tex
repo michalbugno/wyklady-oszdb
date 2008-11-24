@@ -326,6 +326,8 @@ page          = 2KB
 60 KB / (0.01 s + (60 KB / ( 4000 KB/s ))) = 2400 KB/s
 \end{verbatim}
 
+\subsection{Wydajność}
+
 \subsubsection{Poprawa prędkości odczytu}
 \begin{itemize}
 \item odpowiednia organizacja przestrzeni dyskowej
@@ -334,22 +336,14 @@ page          = 2KB
 \item bufor na dysku (zapis sekwencyjny do bufora a potem porozdzielanie w odpowiednie miejsca)
 \end{itemize}
 
-\subsection{\ac{RAID}}
-\subsubsection{Co to i do czego służy?}
-\begin{itemize}
-\item poprawa wydajności - zrównoleglenie operacji we/wy
-\item poprawa bezpieczeństwa - nadmiarowość
-\end{itemize}
-
-\subsubsection{MTTF}
+\paragraph{MTTF}
 MTTF -- Mean Time To Failure -- średni czas spodziewanej bezawaryjnej pracy dysku
 
 Typowy MTTF -- kilka-kilkadziesiąt lat
 
 Prawdopodobieństwo awarii jest stosunkowo niskie
 
-\subsubsection{Poprawa wydajności}
-\paragraph{Bez nadmiarowości}
+\subsubsection{Bez nadmiarowości}
 \begin{itemize}
 \item 1 dysk: $ 100.000h \sim 11 lat $
 \item 100 dysków: $ 1.000h \sim 41dni $
@@ -367,84 +361,123 @@ Prawdopodobieństwo awarii jest stosunkowo niskie
 \end{itemize}
 \paragraph{Block--level striping}
 
-\subsubsection{Typy \acs{RAID}}
+\subsubsection{\ac{RAID}}
+\paragraph{Co to i do czego służy?}
+\begin{itemize}
+\item poprawa wydajności - zrównoleglenie operacji we/wy
+\item poprawa bezpieczeństwa - nadmiarowość
+\end{itemize}
+
+\paragraph{Typy \acs{RAID}}
 \begin{enumerate}
 \item \ac{RAID}0 -- wysoka wydajność, utrata danych nie może być problemem
 \item \ac{RAID}1 -- wydajny ale kosztowny
 \item \ac{RAID}3 -- szybki transfer danych
-\item \ac{RAID}5 -- lepszy niż RAID3 dla dostępu typu ``random``
-\item \ac{RAID} > 5 -- raczej niestetosowany
+\item \ac{RAID}5 -- lepszy niż \ac{RAID}3 dla dostępu typu ``random``
+\item \ac{RAID} $>$ 5 -- raczej niestetosowany
 \end{enumerate}
 
-\begin{comment}
-Jeśli stać nas na RAID 0+1 to jest najlepsze rozwiązanie, jeśli nie to RAID5
+Jeśli stać nas na \ac{RAID}0$+$1 to jest najlepsze rozwiązanie, jeśli nie to \ac{RAID}5
 
-Inne sposoby poprawy wydajności:
- * mirroring na poziomie \ac{SZBD} i systemu
- * sterowanie położeniem danych na dysku (bliżej środka)
- * fragmentacja/grupowanie danych
-  * klastry
-  * fragmentacja tabel
-  * separowanie danych na poziomie fizycznym
+\paragraph{Inne sposoby poprawy wydajności}
+\begin{itemize}
+\item mirroring na poziomie \ac{SZBD} i systemu
+\item sterowanie położeniem danych na dysku (bliżej środka)
+\item fragmentacja/grupowanie danych
+\begin{itemize}
+\item klastry
+\item fragmentacja tabel
+\item separowanie danych na poziomie fizycznym
+\end{itemize}
+\end{itemize}
 
-W jaki sposób przechowywać dane:
- * plik, rekord, blok
- * tabela, wierz, indeks, baza
- * relacja między poziomem logicznym a fizycznym
-  * plik składa się z bloków (a nie pojedynczych bitów [odczyt])
-  * format rekordu: stały lub zmienny
+\subsection{Sposoby przechowywania danych}
+\begin{itemize}
+\item plik, rekord, blok
+\item tabela, wiersz, indeks, baza
+\item relacja między poziomem logicznym a fizycznym
+\begin{itemize}
+\item plik składa się z bloków (a nie pojedynczych bitów [odczyt])
+\item format rekordu: stały lub zmienny
+\end{itemize}
+\end{itemize}
 
-Schemat rekordu (stały):
- * zwiera
-  * liczba pól
-  * typ każdego pola
-  * kolejność pól w rekordzie
- * definiuje rekord
+\subsubsection{Stały format rekordu}
+\paragraph{Zawartość}
+\begin{itemize}
+\item liczba pól
+\item typ każdego pola
+\item kolejność pól w rekordzie
+\item definiuje rekord
+\end{itemize}
 
- * Zalety
-  * umożliwia łatwy dostęp
+\paragraph{Zalety}
+\begin{itemize}
+\item umożliwia łatwy dostęp
+\item prostota implementacji
+\end{itemize}
 
- * Wady
-  * prostota implementacji
-  * tylko jeden typ rekordy w danym pliku
-  * dopisywanie na koniec
-  * usuwanie rekordów
-   * flaga `deleted`
-   * lista usuniętych rekordów (dodawanie może ją wykrzoystywać)
-   * jako że więcej INSERT niż DELETE to nie jest problem
-  * jeśli rozmiar bloku nie jest wielokrotnością rozmiaru rekordu to niektóre
+
+\paragraph{Wady}
+\begin{itemize}
+\item tylko jeden typ rekordy w danym pliku
+\item dopisywanie na koniec
+\item usuwanie rekordów
+\begin{itemize}
+\item flaga ``deleted``
+\item lista usuniętych rekordów (dodawanie może ją wykrzoystywać)
+\item jako że więcej INSERT niż DELETE to nie jest problem
+\end{itemize}
+\item jeśli rozmiar bloku nie jest wielokrotnością rozmiaru rekordu to niektóre
     rekordy będą wymagały dwóch odczytów
+\end{itemize}
 
-Schemat rekordu (zmienny):
- * każdy rekord zawiera opis formatu (self describing)
- * Zalety
-  * rzadkie rekordy
-  * formaty zmienne w czasie
-  * rekordy różnych typów w jednym pliku
- * Wady
-  * marnuje ilość miejsca (więcej miejsca == więcej czasu do przetwarzania danych)
-  * trudniejszy w implementacji
+\subsubsection{Zmienny format rekordu}
+\paragraph{Zawartość}
+\begin{itemize}
+\item każdy rekord zawiera opis formatu (self describing)
+\end{itemize}
+\paragraph{Zalety}
+\begin{itemize}
+\item rzadkie rekordy
+\item formaty zmienne w czasie
+\item rekordy różnych typów w jednym pliku
+\item oszczędność miejsca
+\begin{itemize}
+\item sposoby przechowywania NULLi
+\item wskaźniki
+\item rezerwowanie miejsca dla rekordów (np rezerwowanie 255 dla VARCHAR \emph{zawsze})
+\end{itemize}
+\end{itemize}
+\paragraph{Wady}
+\begin{itemize}
+\item marnuje ilość miejsca (więcej miejsca == więcej czasu do przetwarzania danych)
+\item trudniejszy w implementacji
+\end{itemize}
 
-Oszczędność miejsca:
- * sposoby przechowywania NULLi
- * wskaźniki
- * rezerwowanie miejsca dla rekordów (np rezerwowanie 255 dla VARCHAR _zawsze_)
+\paragraph{Slotted page}
+\begin{itemize}
+\item plik składa się ze stron które odpowiadają blokom na dysku (2kB (Oracle), 4kB, 8kB)
+\item nagłówek (timestamps etc.)
+\item tablica slotów (wskaźnik do początku wolnego miejsca, wskaźnik -- rozmiar, wskaźnik -- rozmiar ...)
+\item elastyczny
+\item powszechnie stosowany w SZBD
+\item w praktyce
+\begin{itemize}
+\item jedna strona == jedna tabela
+\item sekwencyjne przetwarzanie danych z tabeli
+\end{itemize}
+\item wiele tabel w jednym pliku
+\item jedna tabela w wielu plikach
+\item reguła: jeżeli wiersz mieści się na stronie, to jest zawsze na jednej stronie
+\begin{itemize}
+\item więcej zajętego miejsca
+\item efektywniejsze przetwarzanie danych
+\end{itemize}
+\end{itemize}
 
-Format sloted page:
- * plik składa się ze stron które odpowiadają blokom na dysku (2kB (Oracle), 4kB, 8kB)
- * nagłówek (timestamps etc.)
- * tablica slotów (wskaźnik do początku wolnego miejsca, wskaźnik -- rozmiar, wskaźnik -- rozmiar ...)
- * elastyczny
- * powszechnie stosowany w SZBD
- * w praktyce:
-  * jedna strona == jedna tabela
-  * sekwencyjne przetwarzanie danych z tabeli
- * wiele tabel w jednym pliku
- * jedna tabela w wielu plikach
- * reguła: jeżeli wiersz mieści się na stronie, to jest zawsze na jednej stronie
-  * więcej zajętego miejsca
-  * efektywniejsze przetwarzanie danych
-
+\subsubsection{Prezentacja danych, nomenklatura}
+\begin{comment}
 Sposoby reprezentacji:
 1. Każdej tabeli odpowiada plik.
  * mniejsze SZBD
