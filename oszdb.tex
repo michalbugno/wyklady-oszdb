@@ -1,12 +1,13 @@
 \documentclass[12pt]{article}
-\usepackage{geometry}
 
+\usepackage{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[polish]{babel}
 \usepackage{polski}
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{verbatim}
+\usepackage{acronym}
 
 \hypersetup{linkbordercolor=1 1 1}
 \pagestyle{headings}
@@ -58,15 +59,15 @@
 \subsection{Plan}
 \subsubsection{Semestr zimowy}
 \begin{enumerate}
-\item Architektura SZBD
+\item \ac{SZBD}
 \begin{itemize}
 \item pamięć, procesy, dysk
-\item moduły funkcjonalne SZBD, architektura klient/serwer
+\item moduły funkcjonalne \ac{SZBD}, architektura klient/serwer
 \end{itemize}
 \item Fizyczna struktura danych
 \begin{itemize}
 \item struktura fizyczna zbiorów
-\item metody przechowywania danych, organizacja dysków, RAID
+\item metody przechowywania danych, organizacja dysków, \acs{RAID}
 \item fragmentacja/partycjonowanie
 \end{itemize}
 \item Metody dostępu do danych, indeksowanie
@@ -104,7 +105,7 @@
 \begin{itemize}
 \item integralność, transakcje
 \item archiwizacja, odtwarzanie
-\item fault tolerance (RAID, klastry, replikacja)
+\item fault tolerance (\acs{RAID}, klastry, replikacja)
 \end{itemize}
 \item Administracja i optymalizacja wydajności serwera
 \begin{itemize}
@@ -143,7 +144,7 @@
 \end{itemize}
 \end{itemize}
 
-\section{Architektura SZBD}
+\section{\ac{SZBD}}
 %* modele danych
 %* szbd
 %* architektury systemow baz danych
@@ -174,7 +175,7 @@ Modele danych:
 \item wejście: relacja1, relacja2 ..., wyjście: nowa relacja
 \item operacje: selekcja, projekcja, złączenie (join), suma, różnica, przecięcie etc.
 \end{itemize}
-\item język SQL
+\item język \acs{SQL}
 \end{itemize}
 
 \subsubsection{Niezależność}
@@ -187,7 +188,7 @@ Modele danych:
 \subsubsection{Architektury}
 \begin{itemize}
 \item  mainframe
-\item  file sharing, ISAM (Index Sequential Access Method) (na plikach)
+\item  file sharing, \acs{ISAM} (na plikach)
 \item  client-server (klient nie ``dotyka`` serwera)
 \item  architektury wielowarstwowe (3 warstwowe)
 \item  architektury rozproszone
@@ -204,15 +205,15 @@ Modele danych:
 \begin{itemize}
 \item operacje ``klienta``
 \item operacje ``serwera``
-\item SQL
+\item \ac{SQL}
 \item stored procedures -- każdy ma własny język, nie ma zgodności (zmienne, pętle, nie ma struktur danych)
-\item SQL + możliwość wykonania programu na serwerze (SUM(kolumna) vs SELECT * a potem sumuj, programy w Java, C)
+\item \ac{SQL} + możliwość wykonania programu na serwerze (SUM(kolumna) vs SELECT * a potem sumuj, programy w Java, C)
 \end{itemize}
 
-\subsubsection{Dlaczego SZDB?}
+\subsubsection{Dlaczego \acs{SZBD}?}
 \begin{itemize}
 \item redundancja danych
-\item spójność danych (dlaczego nie tylko w aplikacji? bo z reguły SZDB żyje DŁUŻEJ niż aplikacja)
+\item spójność danych (dlaczego nie tylko w aplikacji? bo z reguły \ac{SZBD} żyje DŁUŻEJ niż aplikacja)
 \item równoczesny dostęp do danych (nie trzeba przejmować się równoczesny dostępem)
 \item transakcje (atomicity, conistency, isolation, durability)
 \item bezpieczeństwo danych
@@ -224,7 +225,17 @@ Modele danych:
 Przetwarzanie powinno być \emph{efektywne}.
 
 \subsection{Pamięć, dyski}
-W SZDB dane przechowywane są na dyskach. Ma to znaczenie przy ich projektowaniu.
+W \ac{SZBD} dane przechowywane są na dyskach. Ma to znaczenie przy ich projektowaniu.
+
+\subsubsection{Hierarchia szybkości}
+\begin{enumerate}
+\item cache (najszybszy)
+\item main memory
+\item flash memory
+\item magnetic disk
+\item optical disk
+\item magnetic tapes (najwolniejszy)
+\end{enumerate}
 
 \subsubsection{Podstawowe operacje}
 \begin{description}
@@ -233,7 +244,7 @@ W SZDB dane przechowywane są na dyskach. Ma to znaczenie przy ich projektowaniu
 \end{description}
 Te operacje są kosztowne w porównaniu do operacji w pamięci
 
-\subsubsection{Komponenty tworzące SZDB}
+\subsubsection{Komponenty tworzące \ac{SZBD}}
 \begin{itemize}
 \item dysk
 \begin{itemize}
@@ -257,39 +268,27 @@ Te operacje są kosztowne w porównaniu do operacji w pamięci
 Typowy system ma dużo więcej danych na dysku niż może przechowywać w pamięci.
 
 \subsubsection{Sposoby zabezpieczeń}
-\subparagraph{RAID}
+\paragraph{\acs{RAID}}
 \begin{itemize}
 \item backup danych, backup logów (raz na jakiś czas zapisujemy dane, ciągle backupujemy logi)
 \item w przypadku awarii restore danych a potem wykonujemy logi od ostatniego dobrego backupu
 \end{itemize}
 
-\subparagraph{Replikacja}
+\paragraph{Replikacja}
 \begin{itemize}
 \item zabezpieczenie przed utratą wszystkiego (serwer wykonuje log i przesyła go gdzieś indziej, do innego serwera)
 \item przybliżenie użytkownikowi danych (coraz mniejsza rola tej funkcji, przepustowość sieci rośnie)
 \end{itemize}
 
-\subparagraph{Struktury dyskowe}
+\paragraph{Struktury dyskowe}
 \begin{itemize}
 \item czas dostępu do dysku jest bardzo wolny
 \item operujemy na dużych zbiorach danych
 \item powinny zapewniać wydajność i bezpieczeństwo
 \end{itemize}
 
-\subsection{Fizyczne nośniki}
-\subsubsection{Hierarchia szybkości}
-\begin{enumerate}
-\item cache (najszybszy)
-\item main memory
-\item flash memory
-\item magnetic disk
-\item optical disk
-\item magnetic tapes (najwolniejszy)
-\end{enumerate}
-
-
-\subsubsection{Dysk}
-\subparagraph{Budowa}
+\subsection{Dysk}
+\subsubsection{Budowa}
 \begin{itemize}
 \item głowica
 \item talerz
@@ -299,60 +298,89 @@ Typowy system ma dużo więcej danych na dysku niż może przechowywać w pamię
 \item sektor
 \end{itemize}
 
-\begin{comment}
+\subsubsection{Czas odczytu}
 time = seek time (head)(longest?) + rotation delay + transfer time
 
-Dostęp:
- * random (1o-krotni wolniejsze)
- * następny blok
- * sekwencyjny
+\subsubsection{Sposób dostępu}
+\begin{itemize}
+\item random (1o-krotni wolniejsze)
+\item następny blok
+\item sekwencyjny
+\end{itemize}
 
-Przykład:
-transfer rate = 4ooo KB
-avg seek time = o.o1 s
+\paragraph{Przykład}
+\begin{verbatim}
+transfer rate = 4000 KB
+avg seek time = 0.01 s
 page          = 2KB
+\end{verbatim}
 
-* random (1 strona): (2 KB / (o.o1 s + (2 KB / ( 4ooo KB/s )))) = 19o KB/s
-* sekwencyjny (3o stron): (60 KB / (o.o1 s + (60 KB / ( 4ooo KB/s )))) = 24oo KB/s
+\subparagraph{Random}
+1 strona
+\begin{verbatim}
+2 KB / (0.01 s + (2 KB / ( 4000 KB/s ))) = 190 KB/s
+\end{verbatim}
+\subparagraph{Sekwencyjny}
+3o stron
+\begin{verbatim}
+60 KB / (0.01 s + (60 KB / ( 4000 KB/s ))) = 2400 KB/s
+\end{verbatim}
 
- * odpowiednia organizacja przestrzeni dyskowej
- * szeregowanie operacji we/wy (sterowanie ruchem głowicy)
- * bufor dla zapisu (np. w pamięci RAM)
- * bufor na dysku (zapis sekwencyjny do bufora a potem porozdzielanie w odpowiednie miejsca)
+\subsubsection{Poprawa prędkości odczytu}
+\begin{itemize}
+\item odpowiednia organizacja przestrzeni dyskowej
+\item szeregowanie operacji we/wy (sterowanie ruchem głowicy)
+\item bufor dla zapisu (np. w pamięci RAM)
+\item bufor na dysku (zapis sekwencyjny do bufora a potem porozdzielanie w odpowiednie miejsca)
+\end{itemize}
 
-RAID:
- * Redundant Array of Inexpensive Disks
- * Redundant Array of Independent Disks
- * poprawa wydajności - zrównoleglenie operacji we/wy
- * poprawa bezpieczeństwa - nadmiarowość
+\subsection{\ac{RAID}}
+\subsubsection{Co to i do czego służy?}
+\begin{itemize}
+\item poprawa wydajności - zrównoleglenie operacji we/wy
+\item poprawa bezpieczeństwa - nadmiarowość
+\end{itemize}
 
-MTTF - Mean Time To Failure - średni czas spodziewanej bezawaryjnej pracy dysku
-Typowy MTTF - kilka-kilkadziesiąt lat
+\subsubsection{MTTF}
+MTTF -- Mean Time To Failure -- średni czas spodziewanej bezawaryjnej pracy dysku
+
+Typowy MTTF -- kilka-kilkadziesiąt lat
+
 Prawdopodobieństwo awarii jest stosunkowo niskie
 
-Poprawa wydajności:
- * bez nadmiarowości
-  * 1 dysk: ~1oo.oooh ~ 11 lat
-  * 100 dysków: ~1oooh ~41dni
- * mirroring
-  * średni czas 1oo.oooh ^ 2 / 10 = ~1oo.ooo lat
-  * ale prawdopodobieństwo awarii rośnie mocno z wiekiem
-  * rzeczywisty czas rzędu kilkudziesięciu lat
- * Bit-level striping
-  * np macierz 8 dysków, i-ty bit umieszczony na i-tym dysku
-  * 8x szybszy dostęp
- * Block-level striping
+\subsubsection{Poprawa wydajności}
+\paragraph{Bez nadmiarowości}
+\begin{itemize}
+\item 1 dysk: $ 100.000h \sim 11 lat $
+\item 100 dysków: $ 1.000h \sim 41dni $
+\end{itemize}
+\paragraph{Mirroring}
+\begin{itemize}
+\item średni czas $ (100.000 ^ 2)h / 10 \sim 100.000 lat $
+\item ale prawdopodobieństwo awarii rośnie mocno z wiekiem
+\item rzeczywisty czas rzędu kilkudziesięciu lat
+\end{itemize}
+\paragraph{Bit--level striping}
+\begin{itemize}
+\item np macierz 8 dysków, i-ty bit umieszczony na i-tym dysku
+\item 8x szybszy dostęp
+\end{itemize}
+\paragraph{Block--level striping}
 
-RAID0 -- wysoka wydajność, utrata danych nie może być problemem
-RAID1 -- wydajny ale kosztowny
-RAID3 -- szybki transfer danych
-RAID5 -- lepszy niż RAID3 dla dostępu typu ``random``
-RAID > 5 -- raczej niestetosowany
+\subsubsection{Typy \acs{RAID}}
+\begin{enumerate}
+\item \ac{RAID}0 -- wysoka wydajność, utrata danych nie może być problemem
+\item \ac{RAID}1 -- wydajny ale kosztowny
+\item \ac{RAID}3 -- szybki transfer danych
+\item \ac{RAID}5 -- lepszy niż RAID3 dla dostępu typu ``random``
+\item \ac{RAID} > 5 -- raczej niestetosowany
+\end{enumerate}
 
+\begin{comment}
 Jeśli stać nas na RAID 0+1 to jest najlepsze rozwiązanie, jeśli nie to RAID5
 
 Inne sposoby poprawy wydajności:
- * mirroring na poziomie SZDB i systemu
+ * mirroring na poziomie \ac{SZBD} i systemu
  * sterowanie położeniem danych na dysku (bliżej środka)
  * fragmentacja/grupowanie danych
   * klastry
@@ -757,4 +785,11 @@ W jaki sposób zapewnić transakcyjność?
      for media         for undo after                for redo after
       recovery         system failure                system failure
 \end{comment}
+\section{Akronimy}
+\begin{acronym}
+  \acro{ISAM}{Index Sequential Access Method}
+  \acro{RAID}{Redundant Array of Independent Disks}
+  \acro{SQL}{Structured Query Language}
+  \acro{SZBD}{System Zarządzania Bazą Danych}
+\end{acronym}
 \end{document}
