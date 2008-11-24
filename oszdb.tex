@@ -9,7 +9,10 @@
 \usepackage{verbatim}
 \usepackage{acronym}
 
-\hypersetup{linkbordercolor=1 1 1}
+\hypersetup{
+  linkbordercolor={1 1 1},
+  urlbordercolor={1 1 1}
+}
 \pagestyle{headings}
 
 \author{Michał Bugno \and Antek Piechnik}
@@ -49,11 +52,11 @@
 
 \subsection{Linki}
 \begin{itemize}
-\item www.sqlservercentral.com
-\item www.databaseweekly.com
-\item www.oracle.com/oramag/index.html
-\item www.db2mag.com
-\item www.iiug.org
+\item \url{http://www.sqlservercentral.com}
+\item \url{http://www.databaseweekly.com}
+\item \url{http://www.oracle.com/oramag/index.html}
+\item \url{http://www.db2mag.com}
+\item \url{http://www.iiug.org}
 \end{itemize}
 
 \subsection{Plan}
@@ -78,7 +81,7 @@
 \item Przetwarzanie transakcyjne
 \begin{itemize}
 \item pojęcie transakcji
-\item ACID (atomicity, consistency, isolation, durability)
+\item \ac{ACID}
 \end{itemize}
 \item Metody realizacji przetwarzania transakcyjnego
 \begin{itemize}
@@ -215,7 +218,7 @@ Modele danych:
 \item redundancja danych
 \item spójność danych (dlaczego nie tylko w aplikacji? bo z reguły \ac{SZBD} żyje DŁUŻEJ niż aplikacja)
 \item równoczesny dostęp do danych (nie trzeba przejmować się równoczesny dostępem)
-\item transakcje (atomicity, conistency, isolation, durability)
+\item transakcje (\ac{ACID})
 \item bezpieczeństwo danych
 \begin{itemize}
 \item ochrona przed niepowołanym dostępem (bardzo dokładna kontrola np. konkretne kolumny)
@@ -336,8 +339,8 @@ page          = 2KB
 \item bufor na dysku (zapis sekwencyjny do bufora a potem porozdzielanie w odpowiednie miejsca)
 \end{itemize}
 
-\paragraph{MTTF}
-MTTF -- Mean Time To Failure -- średni czas spodziewanej bezawaryjnej pracy dysku
+\paragraph{\ac{MTTF}}
+Średni czas spodziewanej bezawaryjnej pracy dysku
 
 Typowy MTTF -- kilka-kilkadziesiąt lat
 
@@ -461,7 +464,7 @@ Jeśli stać nas na \ac{RAID}0$+$1 to jest najlepsze rozwiązanie, jeśli nie to
 \item nagłówek (timestamps etc.)
 \item tablica slotów (wskaźnik do początku wolnego miejsca, wskaźnik -- rozmiar, wskaźnik -- rozmiar ...)
 \item elastyczny
-\item powszechnie stosowany w SZBD
+\item powszechnie stosowany w \ac{SZBD}
 \item w praktyce
 \begin{itemize}
 \item jedna strona == jedna tabela
@@ -476,69 +479,67 @@ Jeśli stać nas na \ac{RAID}0$+$1 to jest najlepsze rozwiązanie, jeśli nie to
 \end{itemize}
 \end{itemize}
 
-\subsubsection{Prezentacja danych, nomenklatura}
-\begin{comment}
-Sposoby reprezentacji:
-1. Każdej tabeli odpowiada plik.
- * mniejsze SZBD
-2. Rezerwujemy obszar dysku
- * większe SZBD
+\subsubsection{Reprezentacja danych, nomenklatura}
+\paragraph{Sposoby reprezentacji}
+\begin{itemize}
+\item każdej tabeli odpowiada plik -- mniejsze \ac{SZBD}
+\item rezerwowany obszar dysku -- większe \ac{SZBD}
+\end{itemize}
 
-Przetrzeń dyskowa SZBD:
- * Oracle -- tablespace
- * Informix -- Dbspace
- * MSSQL, Sybase -- file group
+\paragraph{Przetrzeń dyskowa \ac{SZBD}}
+\begin{itemize}
+\item Oracle -- tablespace
+\item Informix -- Dbspace
+\item MSSQL, Sybase -- file group
+\end{itemize}
 
-  Informix
-   * database, dbspace, chunk
-   * przestrzeń dyskowa z jednego lub więcej chunków
-   * chunk to jeden plik lub obszar dyskowy
-   * przestrzeń dyskowa podzidzelona na jednostki logiczne (dbspace), każda
+\subparagraph{Informix}
+\begin{itemize}
+\item database, dbspace, chunk
+\item przestrzeń dyskowa z jednego lub więcej chunków
+\item chunk to jeden plik lub obszar dyskowy
+\item przestrzeń dyskowa podzidzelona na jednostki logiczne (dbspace), każda
      składa się z jednego lub więcej plików
-   * na serwerze może być wiele BD (w określonych Dbspaceach)
+\item na serwerze może być wiele BD (w określonych Dbspaceach)
+\end{itemize}
 
-  MSSQL
-   * database, filegroup, datafile
-   * na serwerze wiele baz danych
-   * dla każdej bazy danych mamy przyzielaną przestrzeń dyskową
-   * dla każdej bazy można stworzyć kilka grup plików (file group)
+\subparagraph{MSSQL}
+\begin{itemize}
+\item database, filegroup, datafile
+\item wiele baz danych
+\item każdej bazy danych mamy przyzielaną przestrzeń dyskową
+\item dla każdej bazy można stworzyć kilka grup plików (file group)
+\end{itemize}
 
-  ORACLE
-   * Tablespace, datafile
-   * przestrzeń dyskowa podzielona na tablespace'y
-   * tablespece to jeden lub więcej plików
+\subparagraph{ORACLE}
+\begin{itemize}
+\item tablespace, datafile
+\item przestrzeń dyskowa podzielona na tablespace'y
+\item tablespace to jeden lub więcej plików
+\end{itemize}
 
-Tabela
- * W momencie tworzenia serwer przydziela jej przestrzeń dyskową składającą
+\paragraph{Tabela}
+\begin{itemize}
+\item w momencie tworzenia serwer przydziela jej przestrzeń dyskową składającą
    się z obszaru stron na dysku nazywanego zakresem (extent)
- * extent: ciągly obszar stron na dysku
- * rozmiar zwykle kilka lub kilkanaście stron (można nim sterować)
- * dopisywanie wierszy do tabeli powoduje wypełnianie stron w ramach extentu
- * jeżeli brakuje miejsca to przydzielany jest kolejny extent
+\item extent: ciągly obszar stron na dysku
+\item rozmiar zwykle kilka lub kilkanaście stron (można nim sterować)
+\item dopisywanie wierszy do tabeli powoduje wypełnianie stron w ramach extentu
+\item jeżeli brakuje miejsca to przydzielany jest kolejny extent
+\end{itemize}
 
 Rozmiar extentu może być zmieniony (od danego momentu extenty większe). Można
 też automatycznie zwiększać rozmiar extentu (np. co 16 extent podwajamy)
+
 Extenty nie są zwalniane automatycznie (wyjątek: tabele tymczasowe) -- dlatego
 że zakładamy, że z reguły tabele się rozrastają a nie kurczą.
 
-Oracle (PCTFREE, PCTUSED)
+% Oracle (PCTFREE, PCTUSED)
 
-
-
-WYKLAD - 03 / 11 / 2008
-
-
-
-Tabela - podsumowanie (zeszly wyklad)
-	* Dane tabel przechowywane sa w stronach plikow z danymi
-	* Wiersz tabeli odpowiada slotowi na stronie
-	* Mozna sterowac fizycznym polozeniem danych na dyskach przez umieszczenie tabeli w logicznej jednostce serwer
-	* Przestrzen przydzielana jest w extentach
-	* Extent'y nie sa zwalniane automatycznie
-	* Dane tabeli moga znajdowac sie w kilku plikach
+\begin{comment}
 
 Cluster
-  	* Przechowywanie dwoch (lub wiecej) tabel lacznie na poziomie fizycznym (razem)
+	* Przechowywanie dwoch (lub wiecej) tabel lacznie na poziomie fizycznym (razem)
 		- jesli najczestszym sposobem ich przegladania jest join
 		- mozna stworzyc strukture typu cluster
 	* ORACLE:
@@ -820,7 +821,9 @@ W jaki sposób zapewnić transakcyjność?
 \end{comment}
 \section{Akronimy}
 \begin{acronym}
+  \acro{ACID}{Atomicity, Consistency, Isolation, Durability}
   \acro{ISAM}{Index Sequential Access Method}
+  \acro{MTTF}{Mean Time To Failure}
   \acro{RAID}{Redundant Array of Independent Disks}
   \acro{SQL}{Structured Query Language}
   \acro{SZBD}{System Zarządzania Bazą Danych}
