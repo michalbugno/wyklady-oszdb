@@ -679,8 +679,10 @@ SQL - indeksy
 
   FILL FACTOR 10%
 
-.
-WYKLAD 17/11/2008
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WYKLAD 17/11/2008
+% ATOMICITY, CONSISTENCY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Zagadnienia do rozważenia:
  * możliwość awarii systemu podczas transakcji
@@ -818,9 +820,185 @@ W jaki sposób zapewnić transakcyjność?
     not needed             not needed                    not needed
      for media         for undo after                for redo after
       recovery         system failure                system failure
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WYKLAD 25.11.2008
+% ISOLATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Najprostsze rozwiazanie: seryjne wykonywanie transakcji
+Trudniej: rownolegle (szybkosc)
+
+Transakcja to:
+ * I/O + CPU
+ * typy: duzo krotkich transakcji lub "dlugie" + "krotkie" -- potrzebne rozwiazanie!
+
+Integralność danych
+\begin{itemize}
+\item transakcja zapewnia integralność
+\item seryjne transakcje -- nie ma problemu
+\item równoległe transakcje -- problem
+\end{itemize}
+
+Problemy wynikające z równoczesnego dostępu:
+\begin{itemize}
+\item problem utraconej modyfikacji (lost update)
+\item zależność od niezatwierdzonej wartości (dirty read, uncommited dependency)
+\item niespójna analiza (inconsistent analysis, nonrepeatable read) -- transakcja dwukrotnie odczytuje
+      tą samą jednostkę danych (wiersz tabeli) i dostaje różne dane (w międzyczasie była modyfikacja)
+\item phantom read -- odczyt danych, które pojawiły się podczas transakcji (INSERT)
+\end{itemize}
+
+Zapewnienie wszystkich reguł jest \emph{bardzo} kosztowne i zazwyczaj są pewne odstępstwa.
+
+Poziom izolacji -- pewne ustawienie, które definiuje jakie zapewniamy rozwiązania izolacji (trzeba
+wybrać między kosztem obsługi a zapewnioną izolacją)
+
+\begin{itemize}
+\item transakcje to programy
+\item możliwe różne uszeregowanie operacji
+\item trudno analizować czy transakcje zależą od siebie czy nie
+\item ograniczamy tą analizę do READ i WRITE
+\end{itemize}
+
+Przykład:
+  T1:
+    1. READ(A)
+    2. A = A + 100
+    3. WRITE(A)
+    4. READ(B)
+    5. B = B + 100
+    6. WRITE(B)
+
+  T2:
+    1. READ(A)
+    2. A = A * 2
+    3. WRITE(A)
+    4. READ(B)
+    5. B = B * 2
+    6. WRITE(B)
+
+  CONSTRAINT A == B
+
+  * transakcje wykonywane w kolejności T1, T2 -- zapewniony constraint
+  * kolejność T2, T1 -- zapewniony constraint ale \emph{inny wynik}
+  * T1.1, T1.2, T1.3, T2.1, T2.2, T2.3, T1.4, T1.5, T1.6, T2.4, T2.5, T2.6 -- wynik okej
+  * T1.{1-3}, T2.{1-6}, T1.{4-6} -- nie spełniona integralność
+  * to co powyzej ale mnozenie razy 1 -- spełniona integralność
+
+  Które są dobre? (niezależnie od danych wejściowych i operacji w transakcji)
+
+Koniec przykładu.
+
+Rozwiązywanie problemu izolacji:
+
+1. Wyróżniamy transkacje READ i WRITE w transakcji (szeregowalność konfliktów)
+\begin{itemize}
+\item jeżeli instrukcje odnoszą się do różnych danych to można je zamienić miejscami
+\item jeżeli odnoszą się do tych samych danych i przynajmniej jedna jest WRITEt to jest \emph{konflikt}
+\end{itemize}
+
+Uszeregowanie S:
+ * I_i, I_j -- dwie kolejne instrukcje
+ * jeśli nie są w konflikcie to można je zamienić
+ * dostajemy uszregowanie S'
+ * S i S' są równoważne
+ * S' jest serializowalny, szeregowalny -- daje te same wyniki
+Definicja: plany są równoważne ?
+Definicja: plan szeregowalny: plan jest szregowalny ze wzgłedy na konflikt jesśli jest on zgodny z planem
+seryjnym (sekwencyjnym)
+
+Plan może być przekształcony do uszeregowania sekwencyjnego <T1, T2> przez serię zamian instrukcji, które
+nie są w konflikcie.
+
+Istnieją plany, których nie da się uzyskać tą metodą a dają taki sam wynik (ale znalezienie ich jest
+kosztowne)
+
+2. Odniesienie do READ/WRITE -- szeregowalność widoków)
+ * view serializability
+ * view equivalent
+Reguły:
+ * dla każdej danej Q jeśli Ti czyta początkową wartość w planie S to musi także czytać w S'
+ * dla każdej danej Q jeśli Ti wykonuje READ(Q) w S i wartość Q jest ``wyprodukowana`` przez Tj
+   to w  S' musi być tak samo
+ * dla każdej danej Q jesśli Ti wykonuje końcowy zapis WRITE(Q) to S' także musi go wykonywać
+   (zapewnia takie same wyniki planów)
+
+ * szeregowanie konfliktów zawiera się w szeregowaniu widoków (ale nie na odwrót)
+
+    T2    |   T4     |   T6
+ ---------+----------+---------
+  READ(Q) |          |
+          | WRITE(Q) |
+  WRITE(Q)|          |
+          |          | WRITE(Q)
+
+
+AWARIE TRANSAKCJI
+
+ * jeżeli awarii uległa Ti to trzeba ją wycofać i wszystkie te które są od niej zależne
+   (takie które przeczytały to co zapisała Ti)
+ * musimy limitować uszeregowania do takich, które pozwalają na wycofanie transakcji zależnych
+
+ T8      |     T9
+ --------+--------
+ READ(A) |
+ WRITE(A)|
+         | READ(A)
+ READ(B) |
+
+ * Jeśli COMMIT<T9> byl zaraz po READ(A) to taka sytuacja powoduje brak możliwości odtworzenia
+   (nonrecoverable)
+ * uszeregowania odtwarzalne (recoverable) -- jeśli transakcja Tj czyta zapisane Ti to COMMIT Tj
+   musi nastąpić \emph{po} COMMIT Ti
+
+3. Uszeregowania ``wolne`` od kaskadowego wycofywania (``cascadeless schedule``)
+Jeżeli Tj czyta dane zapisane przez Ti to Ti musi się zakończyć zanim Tj przeczyta dane
+Każde uszeregowanie ``cascadeless`` jest ``recoverable``
+
+Kaskadowe wycofywanie transakcji
+  * T10, T11, T12, jeśli T10 padnie to trzeba wycofać T11 i T12
+
+Rozwiązania:
+ * można analizować czy uszeregowanie spełnia kryteria:
+   * ale ``conflict`` zlożoność takiej analizy $n^2$
+   * view $2^n$
+
+Protokoły zapewniające pożądane cechy uszregeowania:
+ * wiele
+ * m.in. ``lock based protocols`` -- blokady, najpopularniejsze
+
+Poziomy izolacji:
+ * serializable (default)
+ * repetable read
+ * read commited (most often)
+ * read uncommited
+ * SET ISOLATION LEVEL <typ>
+
+Zerknąć na http://www.postgresql.org/docs/8.3/static/transaction-iso.html#MVCC-ISOLEVEL-TABLE
+
+Szeregowalność według jakiego ``punktu``?
+\begin{itemize}
+\item dowolny
+\item moment COMMIT (do tego dążymy)
+\item moment rozpoczęcia
+\end{itemize}
+
+Metody pozwalające zarządzać równoczesnym dostępem (protokoły)
+ * \ac{2PL}
+  * strict \ac{2PL}
+  * rigorous \ac{2PL}
+ * tree
+ * timestamp
+ * validation
+ * multiversion
+  * timestamp
+  * two-phase locking
+
 \end{comment}
 \section{Akronimy}
 \begin{acronym}
+  \acro{2PL}{Two-Phase Locking}
   \acro{ACID}{Atomicity, Consistency, Isolation, Durability}
   \acro{ISAM}{Index Sequential Access Method}
   \acro{MTTF}{Mean Time To Failure}
