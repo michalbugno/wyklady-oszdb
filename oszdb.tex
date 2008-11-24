@@ -225,52 +225,81 @@ Przetwarzanie powinno być \emph{efektywne}.
 
 \subsection{Pamięć, dyski}
 W SZDB dane przechowywane są na dyskach. Ma to znaczenie przy ich projektowaniu.
-\begin{comment}
- * READ -- transfer z dysku do RAM
- * WRITE -- zapis z RAM na dysk
- * te operacje są kosztowne w porównaniu do operacji w pamięci
 
-Server: pamięć, procesy komunikujące i dysk
+\subsubsection{Podstawowe operacje}
+\begin{description}
+\item[READ] transfer z dysku do RAM
+\item[WRITE] zapis z RAM na dysk
+\end{description}
+Te operacje są kosztowne w porównaniu do operacji w pamięci
 
-Komponenty tworzące SZDB:
- * dysk
-  * struktury przechowujące dane
-  * struktury przechowujące opis danych
-  * struktury zapewniające przetwarzanie transakcyjne
-  * struktury zapewniające bezpieczeństwo
- * procesy
-  * operacje związane z funkcjonowaniem serwera
-  * operacje wykonywane ``na zlecenie`` aplikacji klienckich
- * pamięć
-  * pula buforów
-  * struktury kontrolne
+\subsubsection{Komponenty tworzące SZDB}
+\begin{itemize}
+\item dysk
+\begin{itemize}
+\item struktury przechowujące dane
+\item struktury przechowujące opis danych
+\item struktury zapewniające przetwarzanie transakcyjne
+\item struktury zapewniające bezpieczeństwo
+\end{itemize}
+\item procesy
+\begin{itemize}
+\item operacje związane z funkcjonowaniem serwera
+\item operacje wykonywane ``na zlecenie`` aplikacji klienckich
+\end{itemize}
+\item pamięć
+\begin{itemize}
+\item pula buforów
+\item struktury kontrolne
+\end{itemize}
+\end{itemize}
 
 Typowy system ma dużo więcej danych na dysku niż może przechowywać w pamięci.
 
- * RAID
- * backup danych, backup logów (raz na jakiś czas zapisujemy dane, ciągle backupujemy logi)
-  * w przypadku awarii restore danych a potem wykonujemy logi od ostatniego dobrego backupu
+\subsubsection{Sposoby zabezpieczeń}
+\subparagraph{RAID}
+\begin{itemize}
+\item backup danych, backup logów (raz na jakiś czas zapisujemy dane, ciągle backupujemy logi)
+\item w przypadku awarii restore danych a potem wykonujemy logi od ostatniego dobrego backupu
+\end{itemize}
 
- * replikacja
-  * zabezpieczenie przed utratą wszystkiego (serwer wykonuje log i przesyła go gdzieś indziej, do innego serwera)
-  * przybliżenie użytkownikowi danych (coraz mniejsza rola tej funkcji, przepustowość sieci rośnie)
+\subparagraph{Replikacja}
+\begin{itemize}
+\item zabezpieczenie przed utratą wszystkiego (serwer wykonuje log i przesyła go gdzieś indziej, do innego serwera)
+\item przybliżenie użytkownikowi danych (coraz mniejsza rola tej funkcji, przepustowość sieci rośnie)
+\end{itemize}
 
-Struktury dyskowe
- * czas dostępu do dysku jest bardzo wolny
- * operujemy na dużych zbiorach danych
- * powinny zapewniać wydajność i bezpieczeństwo
+\subparagraph{Struktury dyskowe}
+\begin{itemize}
+\item czas dostępu do dysku jest bardzo wolny
+\item operujemy na dużych zbiorach danych
+\item powinny zapewniać wydajność i bezpieczeństwo
+\end{itemize}
 
-Storage-device hierarchy:
-  cache (najszybszy) <=> main memory <=> flash memory <=> magnetic disk <=> optical disk <=> magnetic tapes (najwolniejszy)
+\subsection{Fizyczne nośniki}
+\subsubsection{Hierarchia szybkości}
+\begin{enumerate}
+\item cache (najszybszy)
+\item main memory
+\item flash memory
+\item magnetic disk
+\item optical disk
+\item magnetic tapes (najwolniejszy)
+\end{enumerate}
 
-Dysk:
- * głowica
- * talerz
- * ścieżka
- * cylinder
- * blok
- * sektor
 
+\subsubsection{Dysk}
+\subparagraph{Budowa}
+\begin{itemize}
+\item głowica
+\item talerz
+\item ścieżka
+\item cylinder
+\item blok
+\item sektor
+\end{itemize}
+
+\begin{comment}
 time = seek time (head)(longest?) + rotation delay + transfer time
 
 Dostęp:
