@@ -8,12 +8,17 @@
 \usepackage{graphicx}
 \usepackage{verbatim}
 \usepackage{acronym}
+\usepackage{fancyhdr}
 
 \hypersetup{
   linkbordercolor={1 1 1},
-  urlbordercolor={1 1 1}
+  urlbordercolor={1 1 1},
+  colorlinks=true
 }
-\pagestyle{headings}
+
+\pagestyle{fancy}
+\cfoot{}
+\rfoot{\thepage}
 
 \author{Michał Bugno \and Antek Piechnik}
 \title{Wykłady z OSZBD}
@@ -22,6 +27,16 @@
 \maketitle
 \tableofcontents
 \newpage
+
+\section{Ten plik}
+Plik to zapis wykładów dra Roberta Marcjana na Akademii~Górniczo--Hutniczej
+w~Krakowie na kierunku Informatyka.
+\begin{itemize}
+\item inicjatywa: msq (\url{michal.bugno<at>gmail.com})
+\item pomoc: tph (\url{antek.piechnik<at>gmail.com}).
+\item źródła można znaleźć w repozytorium \href{http://git.or.cz/}{Git--a}
+      pod adresem:\\ \url{http://github.com/michalbugno/wyklady-oszdb/}
+\end{itemize}
 
 \section{Wstęp}
 \subsection{Literatura}
@@ -76,7 +91,7 @@
 \item Metody dostępu do danych, indeksowanie
 \begin{itemize}
 \item dostęp sekwencyjny
-\item indeksy, B-drzewa, hash, bitmap, siatkowe (struktury wielowymiarowe)
+\item indeksy, \ac{B--Tree}, hash, bitmap, siatkowe (struktury wielowymiarowe)
 \end{itemize}
 \item Przetwarzanie transakcyjne
 \begin{itemize}
@@ -147,7 +162,6 @@
 \end{itemize}
 \end{itemize}
 
-\section{\ac{SZBD}}
 %* modele danych
 %* szbd
 %* architektury systemow baz danych
@@ -167,8 +181,8 @@ Modele danych:
 \item obiektowo-relacyjny
 \end{itemize}
 
-\subsection{Relacyjny model danych}
-\subsubsection{Cechy}
+\section{Relacyjny model danych}
+\subsection{Cechy}
 
 \begin{itemize}
 \item relacje, krotki, atrybuty
@@ -181,14 +195,14 @@ Modele danych:
 \item język \acs{SQL}
 \end{itemize}
 
-\subsubsection{Niezależność}
+\subsection{Niezależność}
 \begin{itemize}
 \item możliwość modyfikacji definicji (schematu) na danym poziomie bez konieczności zmian na wyższym poziomie
    (poziom fizyczny, logiczny, prezentacji)
 \item aplikacje są niezależne od tego jak dane są strukturalizowane i przechowywane
 \end{itemize}
 
-\subsubsection{Architektury}
+\subsection{Architektury}
 \begin{itemize}
 \item  mainframe
 \item  file sharing, \acs{ISAM} (na plikach)
@@ -204,7 +218,7 @@ Modele danych:
    bardzo dobrze zoptymalizowane)
 \end{itemize}
 
-\subsubsection{Client--server}
+\subsection{Client--server}
 \begin{itemize}
 \item operacje ``klienta``
 \item operacje ``serwera``
@@ -213,7 +227,7 @@ Modele danych:
 \item \ac{SQL} + możliwość wykonania programu na serwerze (SUM(kolumna) vs SELECT * a potem sumuj, programy w Java, C)
 \end{itemize}
 
-\subsubsection{Dlaczego \acs{SZBD}?}
+\subsection{Dlaczego \acs{SZBD}?}
 \begin{itemize}
 \item redundancja danych
 \item spójność danych (dlaczego nie tylko w aplikacji? bo z reguły \ac{SZBD} żyje DŁUŻEJ niż aplikacja)
@@ -227,10 +241,10 @@ Modele danych:
 \end{itemize}
 Przetwarzanie powinno być \emph{efektywne}.
 
-\subsection{Pamięć, dyski}
+\section{Pamięć, dyski}
 W \ac{SZBD} dane przechowywane są na dyskach. Ma to znaczenie przy ich projektowaniu.
 
-\subsubsection{Hierarchia szybkości}
+\subsection{Hierarchia szybkości}
 \begin{enumerate}
 \item cache (najszybszy)
 \item main memory
@@ -240,14 +254,14 @@ W \ac{SZBD} dane przechowywane są na dyskach. Ma to znaczenie przy ich projekto
 \item magnetic tapes (najwolniejszy)
 \end{enumerate}
 
-\subsubsection{Podstawowe operacje}
+\subsection{Podstawowe operacje}
 \begin{description}
 \item[READ] transfer z dysku do RAM
 \item[WRITE] zapis z RAM na dysk
 \end{description}
 Te operacje są kosztowne w porównaniu do operacji w pamięci
 
-\subsubsection{Komponenty tworzące \ac{SZBD}}
+\subsection{Komponenty tworzące \ac{SZBD}}
 \begin{itemize}
 \item dysk
 \begin{itemize}
@@ -270,20 +284,20 @@ Te operacje są kosztowne w porównaniu do operacji w pamięci
 
 Typowy system ma dużo więcej danych na dysku niż może przechowywać w pamięci.
 
-\subsubsection{Sposoby zabezpieczeń}
-\paragraph{\acs{RAID}}
+\subsection{Sposoby zabezpieczeń}
+\subsubsection{\acs{RAID}}
 \begin{itemize}
 \item backup danych, backup logów (raz na jakiś czas zapisujemy dane, ciągle backupujemy logi)
 \item w przypadku awarii restore danych a potem wykonujemy logi od ostatniego dobrego backupu
 \end{itemize}
 
-\paragraph{Replikacja}
+\subsubsection{Replikacja}
 \begin{itemize}
 \item zabezpieczenie przed utratą wszystkiego (serwer wykonuje log i przesyła go gdzieś indziej, do innego serwera)
 \item przybliżenie użytkownikowi danych (coraz mniejsza rola tej funkcji, przepustowość sieci rośnie)
 \end{itemize}
 
-\paragraph{Struktury dyskowe}
+\subsubsection{Struktury dyskowe}
 \begin{itemize}
 \item czas dostępu do dysku jest bardzo wolny
 \item operujemy na dużych zbiorach danych
@@ -329,9 +343,9 @@ page          = 2KB
 60 KB / (0.01 s + (60 KB / ( 4000 KB/s ))) = 2400 KB/s
 \end{verbatim}
 
-\subsection{Wydajność}
+\subsubsection{Wydajność}
 
-\subsubsection{Poprawa prędkości odczytu}
+\paragraph{Poprawa prędkości odczytu}
 \begin{itemize}
 \item odpowiednia organizacja przestrzeni dyskowej
 \item szeregowanie operacji we/wy (sterowanie ruchem głowicy)
@@ -339,30 +353,30 @@ page          = 2KB
 \item bufor na dysku (zapis sekwencyjny do bufora a potem porozdzielanie w odpowiednie miejsca)
 \end{itemize}
 
-\paragraph{\ac{MTTF}}
+\subparagraph{\ac{MTTF}}
 Średni czas spodziewanej bezawaryjnej pracy dysku
 
 Typowy MTTF -- kilka-kilkadziesiąt lat
 
 Prawdopodobieństwo awarii jest stosunkowo niskie
 
-\subsubsection{Bez nadmiarowości}
+\paragraph{Bez nadmiarowości}
 \begin{itemize}
 \item 1 dysk: $ 100.000h \sim 11 lat $
 \item 100 dysków: $ 1.000h \sim 41dni $
 \end{itemize}
-\paragraph{Mirroring}
+\subparagraph{Mirroring}
 \begin{itemize}
 \item średni czas $ (100.000 ^ 2)h / 10 \sim 100.000 lat $
 \item ale prawdopodobieństwo awarii rośnie mocno z wiekiem
 \item rzeczywisty czas rzędu kilkudziesięciu lat
 \end{itemize}
-\paragraph{Bit--level striping}
+\subparagraph{Bit--level striping}
 \begin{itemize}
 \item np macierz 8 dysków, i-ty bit umieszczony na i-tym dysku
 \item 8x szybszy dostęp
 \end{itemize}
-\paragraph{Block--level striping}
+\subparagraph{Block--level striping}
 
 \subsubsection{\ac{RAID}}
 \paragraph{Co to i do czego służy?}
@@ -382,7 +396,7 @@ Prawdopodobieństwo awarii jest stosunkowo niskie
 
 Jeśli stać nas na \ac{RAID}0$+$1 to jest najlepsze rozwiązanie, jeśli nie to \ac{RAID}5
 
-\paragraph{Inne sposoby poprawy wydajności}
+\subsubsection{Inne sposoby poprawy wydajności}
 \begin{itemize}
 \item mirroring na poziomie \ac{SZBD} i systemu
 \item sterowanie położeniem danych na dysku (bliżej środka)
@@ -579,7 +593,7 @@ Dystrybucja danych z jednej tabeli pomiędzy wiele dbspace'ów.
 \end{itemize}
 \end{itemize}
 
-\subsection{Indeksy}
+\section{Indeksy}
 Indeks może być plikiem płaskim, strukturą drzewiastą, hashem, który pozwala na
 przyspieszenie dostępu do danych.
 
@@ -589,7 +603,7 @@ Można używać go na dwa sposoby:
 \item w celu uzyskania dostępu sekwencyjnego (dostęp zgodny z porządkiem wyznaczonym przez indeks)
 \end{itemize}
 
-\subsubsection{Podział}
+\subsection{Podział}
 \begin{itemize}
 \item indeksy płaskie -- uporządkowane zbiory indeksujące
 \item indeksy bazujące na B-drzewach
@@ -597,20 +611,20 @@ Można używać go na dwa sposoby:
 \item indeksowanie po kilku atrybutach
 \end{itemize}
 
-\subsubsection{Budowa}
+\subsection{Budowa}
 \begin{itemize}
 \item klucz (search key) -- atrybut/zbiór atrybutów, wg których wyszukujemy
 \item zbior indeksujacy -- rekordy postaci search--key $=>$ pointer
 \item indeks jest mniejszy od zbioru, który podlega indeksowaniu
 \end{itemize}
 
-\subsubsection{Podstawowe typy indeksów}
+\subsection{Podstawowe typy indeksów}
 \begin{itemize}
 \item uporządkowane -- klucze są uporządkowane
 \item hash -- klucze są rozmieszczone równomiernie (zgodnie z funkcją haszujacą)
 \end{itemize}
 
-\subsubsection{Miary efektywności indeksów}
+\subsection{Miary efektywności indeksów}
 
 \begin{itemize}
 \item dostęp do danych
@@ -624,9 +638,9 @@ Można używać go na dwa sposoby:
 \item narzut wynikający z przestrzeni zajmowanej przez indeks
 \end{itemize}
 
-\subsubsection{Indeksy primary/secondary}
+\subsection{Indeksy primary/secondary}
 
-\paragraph{Primary}
+\subsubsection{Primary}
 \begin{itemize}
 \item uporządkowanie wg indeksu zgodne z fizycznym uporządkowaniem danych
 \item czasami nazywane grupującymi (clustering index)
@@ -635,7 +649,7 @@ Można używać go na dwa sposoby:
 \item indeksy wielopoziomowe (płaski indeks do płaskiego indeksu)
 \item duplikaty (reprezentowanie tylko raz wartości klucza w pliku -- optymalne rozwiązanie, wciąż indeks gęsty)
 \end{itemize}
-\paragraph{Secondary}
+\subsubsection{Secondary}
 \begin{itemize}
 \item uporządkowanie nie jest zgodne z fizycznym uporządkowaniem
 \item nazywane non--clustering index
@@ -643,7 +657,7 @@ Można używać go na dwa sposoby:
 \item duplikaty (buckets)
 \end{itemize}
 
-\subsubsection{Uwagi}
+\subsection{Uwagi}
 \begin{itemize}
 \item generalnie indeks przyspiesza dostęp do danych
 \item dodatkowy koszt związany z modyfikacją danych
@@ -658,8 +672,9 @@ Można używać go na dwa sposoby:
 \item w przypadku rzadkich w zasadzie też, ale jest zdecydowanie mniej możliwości
 \end{itemize}
 \begin{comment}
-		
-Indeksy wielopoziomowe - B-drzewa
+
+\subsection{ac{B--Tree}}
+\begin{comment}
 	* B- balanced - zrownowazone
 	* Wezel
 		K_1, P_1, K_2, P_2, ...., K_n, P_n
@@ -1025,6 +1040,7 @@ Metody pozwalające zarządzać równoczesnym dostępem (protokoły)
 \begin{acronym}
   \acro{2PL}{Two-Phase Locking}
   \acro{ACID}{Atomicity, Consistency, Isolation, Durability}
+  \acro{B--Tree}{Balanced Tree}
   \acro{ISAM}{Index Sequential Access Method}
   \acro{MTTF}{Mean Time To Failure}
   \acro{RAID}{Redundant Array of Independent Disks}
