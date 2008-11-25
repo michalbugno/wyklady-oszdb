@@ -536,102 +536,128 @@ Extenty nie są zwalniane automatycznie (wyjątek: tabele tymczasowe) -- dlatego
 
 % Oracle (PCTFREE, PCTUSED)
 
+\paragraph{Cluster}
+Przechowywanie dwóch (lub wiecej) tabel łącznie na poziomie fizycznym (razem). Wydajne, gdy
+najczęstszym sposobem ich przeglądania jest JOIN.
+
+% * ORACLE:
+%   CREATE TABLE dept (bla bla)
+%   CLUSTER emp_dept(deptno);
+
+
+\paragraph{Fragmentacja tabel}
+Dystrybucja danych z jednej tabeli pomiędzy wiele dbspace'ów.
+ % * INFORMIX:
+     % * FRAGMENT BY ROUND ROBIN (bez konkretnego pomyslu)
+       % IN dbspace1, dbspace2, dbspace3
+     % * FRAGMENT BY EXPRESSION
+       % employee_num <= 2500 IN dbspace1,
+       % employee_num > 2500 IN dbspace2,
+
+ % * ORACLE:
+     % PARTITION BY RANGE (week_no)
+     % (PARTITION sales1 VALUES LESS THAN (4) TABLESPACE ts1)
+
+\paragraph{Podsumowanie}
+\begin{itemize}
+\item dążymy do tego żeby tabele były przechowywane w ciągłych obszarach na dysku
+\begin{itemize}
+\item w ogólnym przypadku -- trudne
+\item pewnym rozwiązaniem jest pamiętanie danych w ciągłych extentach
+\item warto czasem zreorganizowac strukturę extentów aby uzyskać ciągły obszar
+\end{itemize}
+\item czasami sens ma partycjonowanie/fragmentacja danych
+\begin{itemize}
+\item zrównoleglanie operacji we/wy
+\item zysk w przypadku wielu małych transakcji
+\item zysk w przypadku długich operacji
+\end{itemize}
+\item w pewnych przypadkach sens ma tworzenie struktur typu cluster
+\begin{itemize}
+\item gdy wiekszosc operacji dla tych tabel to JOIN
+\item tabele nie są przeglądane samodzielnie (``podatek``)
+\end{itemize}
+\end{itemize}
+
+\subsection{Indeksy}
+Indeks może być plikiem płaskim, strukturą drzewiastą, hashem, który pozwala na
+przyspieszenie dostępu do danych.
+
+Można używać go na dwa sposoby:
+\begin{itemize}
+\item w celu uzyskania dostępu o charakterze bezpośrednim
+\item w celu uzyskania dostępu sekwencyjnego (dostęp zgodny z porządkiem wyznaczonym przez indeks)
+\end{itemize}
+
+\subsubsection{Podział}
+\begin{itemize}
+\item indeksy płaskie -- uporządkowane zbiory indeksujące
+\item indeksy bazujące na B-drzewach
+\item indeksy - struktury typu hash
+\item indeksowanie po kilku atrybutach
+\end{itemize}
+
+\subsubsection{Budowa}
+\begin{itemize}
+\item klucz (search key) -- atrybut/zbiór atrybutów, wg których wyszukujemy
+\item zbior indeksujacy -- rekordy postaci search--key $=>$ pointer
+\item indeks jest mniejszy od zbioru, który podlega indeksowaniu
+\end{itemize}
+
+\subsubsection{Podstawowe typy indeksów}
+\begin{itemize}
+\item uporządkowane -- klucze są uporządkowane
+\item hash -- klucze są rozmieszczone równomiernie (zgodnie z funkcją haszujacą)
+\end{itemize}
+
+\subsubsection{Miary efektywności indeksów}
+
+\begin{itemize}
+\item dostęp do danych
+\begin{itemize}
+\item rekordy o określonej wartości atrybutu (rekordy które spełniają warunek)
+\item rekordy które nie spełniają warunku dla określonego atrybutu
+\end{itemize}
+\item czas dostępu do danych
+\item czas potrzebny na dopisanie rekordu
+\item czas potrzebny na usunięcie rekordu
+\item narzut wynikający z przestrzeni zajmowanej przez indeks
+\end{itemize}
+
+\subsubsection{Indeksy primary/secondary}
+
+\paragraph{Primary}
+\begin{itemize}
+\item uporządkowanie wg indeksu zgodne z fizycznym uporządkowaniem danych
+\item czasami nazywane grupującymi (clustering index)
+\item indeks gesty (dense index) -- rekord indeksu dla każdej wartości klucza
+\item indeks rzadki (sparse index)
+\item indeksy wielopoziomowe (płaski indeks do płaskiego indeksu)
+\item duplikaty (reprezentowanie tylko raz wartości klucza w pliku -- optymalne rozwiązanie, wciąż indeks gęsty)
+\end{itemize}
+\paragraph{Secondary}
+\begin{itemize}
+\item uporządkowanie nie jest zgodne z fizycznym uporządkowaniem
+\item nazywane non--clustering index
+\item indeksy rzadkie -- nie mają sensu
+\item duplikaty (buckets)
+\end{itemize}
+
+\subsubsection{Uwagi}
+\begin{itemize}
+\item generalnie indeks przyspiesza dostęp do danych
+\item dodatkowy koszt związany z modyfikacją danych
+\item jeśli indeks jest duży to spada wydajność dostępu do danych (dla płaskich plikłw indeksujących)
+\item dostęp sekwencyjny
+\begin{itemize}
+\item przy użyciu indeksu primary -- efektywny
+\item przy użyciu indeksu secondary -- o wiele bardziej kosztowny
+\end{itemize}
+\item indeksy rzadkie są mniejsze ale trzeba dodatkowo realizować wyszukiwanie na poziomie danych
+\item w przypadku indeksów gęstych niektóre operacje mogą być zrealizowane przy pomocy samego indeksu
+\item w przypadku rzadkich w zasadzie też, ale jest zdecydowanie mniej możliwości
+\end{itemize}
 \begin{comment}
-
-Cluster
-	* Przechowywanie dwoch (lub wiecej) tabel lacznie na poziomie fizycznym (razem)
-		- jesli najczestszym sposobem ich przegladania jest join
-		- mozna stworzyc strukture typu cluster
-	* ORACLE:
-		CREATE TABLE dept (bla bla)
-		CLUSTER emp_dept(deptno);
-	
-Fragmentacja tabel
-	* dystrybujcja dany z jednej tabeli pomiedzy wiele dbspace'ow)
- 	* INFORMIX:
-	FRAGMENT BY ROUND ROBIN (bez konkretnego pomyslu)
-		IN dbspace1, dbspace2, dbspace3
-	FRAGMENT BY EXPRESSION
-		employee_num <= 2500 IN dbspace1,
-		employee_num > 2500 IN dbspace2,
-		etc.	
-	
-	* ORACLE:
-	PARTITION BY RANGE (week_no)
-		(PARTITION sales1 VALUES LESS THAN (4) TABLESPACE ts1)
-
-Podsumowanie
-	* Dazymy do tego zeby tabele byly przechowywane w ciaglych obszarach na dysku
-		- w ogolnym przypadku - trudne
-		- pewnym rozwiazaniem jest pamietanie danych w ciaglych extentach
-		- warto czasem zreorganizowac strukture extentow aby uzyskac ciagly obszar
-		
-	* Czasami sens ma partycjonowanie/fragmentacja danych
-		- zrownoleglanie operacji we/wy
-		- zysk w przypadku wielu malych transakcji
-		- zysk w przypadku dlugich operacji
-		
-	* W pewnych przypadkach sens ma tworzenie struktur typu cluster
-		- gdy wiekszosc operacji dla tych tabel operacje pobierania danych to JOIN
-		- tabele nie sa przegladane samodzielnie ('podatek')
-	
-Indeksy
-	* Indeksy plaskie
-		- uporzadkowane zbiory indeksujace
-	* Indeksy bazujace na B-drzewach
-	* Indeksy - struktury typu hash
-	* Indeksowanie po kilku atrybutach
-	* Pojecie ogolne
-		- Moze to byc plik plaski, struktura drzewiasta, hash
-	* Moze byc uzywany na dwa sposoby
-		- W celu uzyskania dostepu o charakterze bezposrednim
-		- W celu uzyskania dostepu sekwencyjnego (dostep zgodny z porzadkiem wyznaczonym przez przez indeks)
-	* Indeksowanie jest uzywane zeby przyspieszyc dostep
-	* Klucz (search key) - atrybut/zbior atrybiutow wg ktorego wyszukujemy
-	* Zbior indeksujacy - rekordy postacji search-key<-->pointer
-	* Indeks jest mniejszy od zbioru ktory podlega indeksowaniu
-	* Dwa podstawowe typy indeksow
-		* uporzadkowane - klucze sa uporzadkowane
-		* hash - klucze sa rozmieszczone rownomiernie (zgodnie z funkcja haszujaca)
-		
-Miary efektywnosci indeksow
-	* Dostep do danych
-		- rekordy o okreslonej wartosci atrybutu (rekordy ktory spelniaja warunek)
-		- rekordy ktore nie spelniaja warunku dla okreslonego atrybutu
-	* Czas dostepu do danych
-	* Czas potrzebny na dopisanie rekordu
-	* Czas potrzebny na usuniecie rekordu
-	* Narzut wynikajacy z przestrzeni zajmowanej przez indeks
-	
-Indeksy primary/secondary
-	* Primary
-		- uporzadzkowanie wg indeksu zgodne z fizycznym uporzadkowaniem danych
-		- czasami nazywane grupujacymi (clustering index)
-	* Secondary
-		- uporzadkowanie nie jest zgodne fizycznym uporzadkowaniem
-		- nazywane non clustering index
-
-Indeksy Primary
-	* Indeks gesty (dense index) - rekord indeksu dla kazdej wartosci klucza
-	* Indeks rzadki (sparse index)
-	* Indeksy wielopoziomowe (plaski indeks do plaskiego indeksu)
-	* Duplikaty (reprezentowanie tylko raz wartosci klucza w pliku - optymalnego rozwiazanie, wciaz indeks gesty)
-	
-Indeksy Secondary
-	* Indeksy rzadkie - nie maja sensu
-	* Duplikaty (buckets)
-
-Indeksy - Uwagi
-	* Generalnie indeks przyspiesza dostep do danych
-	* Dodatkowy koszt zwiazany z modyfikacja danych
-	* Jesli indeks jest duzy to spada wydajnosc dostepu do danych (dla plaskich plikow indeksujacych)
-	* Dostep sekwencyjny 
-		- dostep sekwencyjny przy uzyciu indeksu primary - efektywny
-		- dostep sekwencyjny przy uzyciu indeksu secondary - o wiele bardziej kosztowny
-	* Indeksy rzadkie sa mniejsze
-		- ale trzeba dodatkowo realizowac wyszukiwanie na poziomie danych
-	* W przypakdu indeksow gestych niektore operacje moga byc zrealizowane przy pomocy samego indeksu
-		- w przypadku rzadkich w zasadzie tez, ale jest zdecydowanie mniej mozliwosci
 		
 Indeksy wielopoziomowe - B-drzewa
 	* B- balanced - zrownowazone
@@ -679,10 +705,10 @@ SQL - indeksy
 
   FILL FACTOR 10%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% WYKLAD 17/11/2008
-% ATOMICITY, CONSISTENCY
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{comment}
+\section{\ac{ACID}}
+\subsection{Atomicity, Consistency}
+\begin{comment}
 
 Zagadnienia do rozważenia:
  * możliwość awarii systemu podczas transakcji
@@ -821,10 +847,9 @@ W jaki sposób zapewnić transakcyjność?
      for media         for undo after                for redo after
       recovery         system failure                system failure
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% WYKLAD 25.11.2008
-% ISOLATION
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{comment}
+\subsection{Isolation}
+\begin{comment}
 
 Najprostsze rozwiazanie: seryjne wykonywanie transakcji
 Trudniej: rownolegle (szybkosc)
