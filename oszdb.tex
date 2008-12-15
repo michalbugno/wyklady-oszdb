@@ -13,7 +13,7 @@
 \hypersetup{
   linkbordercolor={1 1 1},
   urlbordercolor={1 1 1},
-  colorlinks=true
+  colorlinks=false
 }
 
 \pagestyle{fancy}
@@ -721,7 +721,7 @@ SQL - indeksy
   FILL FACTOR 10%
 
 \end{comment}
-\section{\ac{ACID}}
+\section{ACID}
 \subsection{Atomicity, Consistency}
 \begin{comment}
 
@@ -1034,6 +1034,68 @@ Metody pozwalające zarządzać równoczesnym dostępem (protokoły)
  * multiversion
   * timestamp
   * two-phase locking
+
+
+%% WYKŁAD 15.12.2008
+
+Schematy zarządzania równoczesnym dostępem
+ * Multiversion Timestamp Ordering
+ * Multiversion Two-Phase Locking
+
+Muliversion schemes:
+ * w przypadku modyfikacji Q system przez pewien czas przechowuje poprzednią wersję Q
+ * każda modyfikacja tworzy nową wersję danych
+ * wersje są rozpoznawane na podstawie znaczników czasowych
+ * operacje czytania nie muszą czekać na dane
+
+Warianty:
+ 1. znaczniki czasowe + wielowersyjność
+ 2. wielowersyjność + 2PL
+
+1.a Dla każdego elementu pamiętamy znacznik czasu ostatniej operacji write oraz read
+    (R-timestamp, W-timestamp)
+1.b W-timestamp aktualizowany podczas zapisu
+1.c R-timestamp aktualizowany podczas odczytu
+
+2. Transakcje modyfikujące dane stosują się do reguł protokołu ``rigorous two-phase locking``
+  (zamki trzymane są do zakończenia transakcji). Z każdym elementem skojarzony jest pojedyńczy
+  znacznik.
+
+% BUDOWA I ZASADA DZIALANIA OPTYMALIZATORA KOSZTOWEGO
+Zapytanie:
+1. Parsing and translation (zamiana na postać pośrednią -- wyrażenie w algebrze relacji)
+2. Optimization (odwołuje się do danych statystycznych aby optymalizować)
+3. Evaluation
+
+Optymalizator analizuje plany i wybiera ten o najmniejszym koszcie.
+
+Generowanie planu:
+ * plan początkowy, zgodny z definicją zapytania, zwykle mało efektywny
+   * dostajemy operacje algebry
+   * do tego dobieramy operacje na poziomie fizycznym
+ * generujemy kolejne plany przez przekształcenie wyrażeń algebry i dobór operacji
+   na poziomie fizycznym. Wybeiramy go, jeżeli koszt jest niższy.
+
+Szacowanie kosztów:
+ * wykorzystanie CPU
+ * wykorzystanie pamięci
+ * komunikacja
+ * operacje I/O -- najważniejszy
+
+Na podstawie:
+ * rozmiarów relacji
+ * rozmiaru zbiorów pośrednich
+ * rozmiaru zbiory wynikowego
+ * indeksy, rodzaj
+ * koszt operacji na podstawie danych statystycznych
+
+Algebra relacji:
+ * selekcja
+ * projekcja
+ * iloczyn kartezjański
+ * część wspólna zbiorów
+ * różnica zbiorów
+ * suma zbiorów
 
 \end{comment}
 \section{Akronimy}
