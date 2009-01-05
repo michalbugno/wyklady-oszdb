@@ -1097,6 +1097,112 @@ Algebra relacji:
  * różnica zbiorów
  * suma zbiorów
 
+Informacje statystyczne
+
+ * dla poszczególnych relacji
+
+ n_r  liczba krotek w relacji r
+ b_r  liczba blokow
+ s_r rozmiar krotki
+ f_r liczba krotek w bloku
+
+ V(A, r) liczba unikalnych wartosci dla atrybutu A
+ SC(A,r) selection cardinality srednia ilosc rekordow spelniajacych warunek dla atrybutu A
+
+Sortowanie
+
+ * Kiedy jest potrzebne
+  - ORDER BY, DISTINCT
+  - niektore operacje (np. JOIN) moga byc realizowane efektywnie jesli dane sa posortowane
+
+ * Sortowanie vs uporzadkowanie danych
+  - uporzadkowanie moze byc zrealizowane przy pomocy indeksow (uporzadkowane "logicznie")
+  - czasem mimo tego ze dostepne jest takie uporzadkowanie logiczne warto posortowac dane
+
+ * W pamieci operacyjnej
+  - nie zawsze mozliwe
+
+ * Sortowanie na dysku
+  - pamiec operacyjna + dysk
+  - efektywnosc procesu sortowania zalezy od tego jak duzy obszar roboczy zostanie przydzielony w pamieci operacyjnej
+  - algorytm externam sort-merge
+
+Externam sort-merge
+ * zakladamy, ze mamy M blokow w pamieci przeznaczonych na sortowanie
+ * Sortowanie wykonujace jest w nastepujacych fazach
+  - sort
+   - tworzymy posortowane paczki (czy cos)
+
+  - merge >:-|
+
+  WORKING HARD OF HARDLY WORKING , EY ?
+
+ * Miernikiem kosztu jest liczba dostepow do dysku
+ * Koszt
+  - liczba faz typu merge
+  - koszt utworzenia "paczek"
+  - koszt kazdego kroku merge
+  - calkowity koszt
+
+JOIN
+ * Kilka algorytmow realizacji operacji JOIN
+  - nested-loop join
+  - block nested-loop join
+  - indexed nested-loop join
+  - merge-join
+  - hash-join
+
+ * Wybor algorytmu bazuje na analizie kosztowej
+
+NESTED-LOOP JOIN
+ * Zlaczenie r x_omega s
+
+ * relacja r jest nazywana zewnetrzna relacja (outer relation)
+ * relacja s jest nazywana wewnetrzna relacja (innej relation)
+ * Algorytm nie wymaga zadnych indeksow i moze byc stosowany dla zlaczenia kazdego typu
+ * bardzo kosztowny
+
+NESTED-LOOP JOIN
+ * w najgorszym przypadku (jeden blok w pamieci dla kazdej z relacji)
+  n_r * b_s + b_r
+ * w najlepszym przypadku (jesli relacja wewnetrzna miesci sie w pamieci)
+  b_r + b_s
+ * jesli mniejsza relacja miesci sie w pamieci , to powinna byc relacja wewnetrzna
+
+BLOCK NESTED-LOOP JOIN
+ * wariant algorytmu nested-loop join w ktorym kazdy blok relacji zewnetrznej przetwarzamy z relacja zewnetrzna
+
+ * koszt
+  - w najgorszym przypadku
+  b_r * b_s + b_r
+  - w najlepszym przypadku
+  b_r + b_s
+
+ * jesli zlaczenie jest rownozlaczeniem i dotyczy atrybutu ktory jest kluczem relacji wewnetrznej to przetwarzanie w petli wewnetrznej moze sie zatrzymac 
+ * relacja wewnetrzna moze byc skanowana na przemian w przod i wstecz (zgodnosc z algorytmem LRU)
+
+INDEXED NESTED-LOOP JOIN
+ * zamiast skanowania relacji wewnetrznej mozna uzyc indeksu
+  - zlaczenie jest rownorozlaczeniem
+  - istnieje odpowiedni indeks dla relacji wewnetrznej
+    - jezeli indeks nie istnieje to mozna rozwazyc utworzenie indeksu
+
+ * jesli dostepne sa indeksy dla obu relacji to jako zewn. nalezy wybrac relacje o mniejszej liczbie krotek
+
+Inne zagadnienia
+- co z wynikami posrednimi
+- zeby zrealizowac zadanie trzeba wykonac kilka operacji
+- wyjscie operacji jest wejsciem dla kolejnej
+
+Podsumowanie
+- Optymalizacja kosztowa jest kosztowna
+- Alternatywa
+ - optymalizacja regulowa
+ - rozwiazania miesane
+  - optymalizacja regulowa + kosztowa (odciecie bezsensownych rozwiazan)
+  (optymalizacja regulowa nei sprawdzala sie sama bo nie brala pod uwage dystrybucji danych)
+
+
 \end{comment}
 \section{Akronimy}
 \begin{acronym}
