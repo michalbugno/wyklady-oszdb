@@ -671,79 +671,81 @@ Można używać go na dwa sposoby:
 \item w przypadku indeksów gęstych niektóre operacje mogą być zrealizowane przy pomocy samego indeksu
 \item w przypadku rzadkich w zasadzie też, ale jest zdecydowanie mniej możliwości
 \end{itemize}
-\begin{comment}
 
-\subsection{ac{B--Tree}}
-\begin{comment}
-	* B- balanced - zrownowazone
-	* Wezel
-		K_1, P_1, K_2, P_2, ...., K_n, P_n
-		- K - klucz
-		- P - pointer
-		- n - rozmiar
-		- klucze sa uporzadkowane
-		
+\subsection{\ac{B--Tree}}
+Wygląd węzła: $ K_1, P_1, K_2, P_2, \ldots, K_n, P_n $
+\begin{description}
+\item[K] klucz
+\item[P] pointer
+\item[n] rozmiar
+\end{description}
+Klucze są uporządkowane.
 
-B+ drzewa (wypelnienie wezlow)
-  * Glebokosc B+ drzewa
-    - K- liczba kluczy
-    - Log_[n/2](K)
-    - np. K = 1 000 000
-          n = 100
-          glebokosc = 4
+\subsubsection{B+ drzewa}
+Głębokość B+ drzewa: $ \log_{\frac{n}{2}}{K} $
+\begin{description}
+\item[K] liczba kluczy
+\end{description}
 
-  * B drzewa - najczestszy sposob organizacji
-    - wydajny jesli chodzi o dostep "random"
-    - wydany jesli chodzi o dostep sekwencyjny
+\begin{itemize}
+\item B-drzewa to najczęstszy sposób organizacji
+\item wydajny jeśli chodzi o dostęp \emph{random}
+\item wydajny jeśli chodzi o dostęp sekwencyjny
+\end{itemize}
 
-Hash
-  * Funkcja haszujaca
-    - Key - > h(key)
-  * Struktury typu hash
-    - Statyczne
-    - Dynamiczne (linear hashing, extensible hashing)
-  * Podsumowanie
-    - Struktury typu hash daja lepsze efekty jesli chodzi o dostep bezposredni
-    - Problemy przy zapytaniach typu : zakres wartosci
+\subsection{Hash}
+\begin{itemize}
+\item funkcja haszujaca: $ key => h(key) $
+\item statyczne lub dynamiczne (linear hashing, extensible hashing)
+\item dają lepsze efekty jeśli chodzi o dostęp bezpośredni
+\item problemy przy zapytaniach o zakres wartości
+\end{itemize}
 
-SQL - indeksy
+% SQL - indeksy
+%
+% CREATE INDEX <index-name> ON <relation-name> (<attribute-list>)
+%
+% CREATE INDEX b-index ON branch(branch-name)
+%
+% CREATE UNIQUE INDEX b-index ON branch(branch-name)
+%
+% DROP INDEX <index-name>
+%
+% FILL FACTOR <procent>
+%
+% FILL FACTOR 10%
 
-  CREATE INDEX <index-name> ON <relation-name> (<attribute-list>)
-
-  CREATE INDEX b-index ON branch(branch-name)
-
-  CREATE UNIQUE INDEX b-index ON branch(branch-name)
-
-  DROP INDEX <index-name>
-
-  FILL FACTOR <procent>
-
-  FILL FACTOR 10%
-
-\end{comment}
 \section{ACID}
 \subsection{Atomicity, Consistency}
+\subsubsection{Dlaczego?}
+
+\begin{itemize}
+\item możliwość awarii systemu podczas transakcji
+\item równoczesny dostęp do danych
+\item równoczesne wykonywanie transakcji
+\end{itemize}
+
+\subsubsection{Własności transakcji}
+\paragraph{Consistency}
+\begin{verbatim}
+1. READ(A)
+2. A = A - 50
+3. WRITE(A)
+4. READ(B)
+5. B = B + 50
+6. WRITE(B)
+7. A + B = const
+\end{verbatim}
+Na przykład awaria między 3 i 4 powoduje, że baza powróci do stanu pierwotnego.
+
+\paragraph{Trwałość}
+Zmiany mają charakter trwały.
+
+\paragraph{Izolacja}
+Transakcje są wykonywane w całowitej izolacji (dla innych transakcji nie są widoczne
+do czasu zatwierdzenia.
+
 \begin{comment}
-
-Zagadnienia do rozważenia:
- * możliwość awarii systemu podczas transakcji
- * równoczesny dostęp do danych, równoczesne wykonywanie transakcji
-
-Własności transakcji
- * consistency
-    read(A)
-    A = A - 50
-    write(A)
-    read(B)
-    B = B + 50
-    write(B)
-    A + B = const
-    na przykład awaria między 3 i 4 powoduje, że baza powróci do stanu pierwotnego
- * trwałość
-    zmiany mają charakter trwały
- * izolacja
-    transakcje są wykonywane w całowitej izolacji (dla innych transakcji nie są widoczne
-    do czasu zatwierdzenia
 
 Stany transakcji:
 
@@ -1198,18 +1200,113 @@ Podsumowanie
 - Optymalizacja kosztowa jest kosztowna
 - Alternatywa
  - optymalizacja regulowa
- - rozwiazania miesane
+ - rozwiazania mieszane
   - optymalizacja regulowa + kosztowa (odciecie bezsensownych rozwiazan)
   (optymalizacja regulowa nei sprawdzala sie sama bo nie brala pod uwage dystrybucji danych)
-
-
 \end{comment}
+
+\section{Dane przestrzenne}
+
+\subsection{Zastosowania}
+\begin{itemize}
+\item architektura
+\item planowanie przestrzenne
+\item transport
+\item systemy nawigacji
+\item zarządzanie sytuacjami kryzysowymi
+\end{itemize}
+
+% \subsubsection{Terminologia}
+
+\subsection{Model danych}
+\begin{itemize}
+\item przechowywane z reguły jako grafy
+\item \emph{native} data type (np. \emph{SDO\_GEOMETRY} w Oracle)
+\end{itemize}
+
+\subsubsection{Model rastrowy}
+Opiera się na zapisie macierzowym. Informacje reprezentowane są przez wartości
+numeryczne umieszczone w komórkach macierzy. Liczby umieszczone w miacerzy mogą
+reprezentować dowolne informacje (wysokość nad poziomem morza, wilgotność).
+
+%TODO wady zalety
+
+\subsubsection{Model geometryczny}
+Wektory opisują pewne kształty (np. bryły), posiadamy pewien układ odniesienia
+dla punktów.
+
+Występuje pewna hierarchia obketów. Na szczycie \emph{warstwa przestrzenna},
+której potomkami są na przykład: punkt, linia, ciąg linii, wielokąt.
+
+Warstwa przestrzenna -- zbiór geometrii związany w jakiś sposób znaczeniowo, na
+przykład sieć dróg, mapa miast, obszar leśny. Odpowiednikiem jest z reguły
+kolumna w bazie danych.
+
+\subsection{Indeksowanie}
+Standardowe indeksy się \emph{nie sprawdzają}, dlatego potrzebne są dedykowane
+rozwiązania.
+
+Indeks przestrzenny -- umożliwia wykrzystywanie operatorów przestrzennych (niektóre
+operatory nie mogą być wykonane bez indeksu).
+
+\subsection{Przetwarzanie danych}
+Najczęściej dane są dwuwymiarowe (można przechowywać 3, 4 wymiarowe). Można je przetwarzać
+za pomocą bogatego zbioru opertorów.
+
+\begin{description}
+\item[SDO\_FILTER] w sposób przybliżony sprawdza czy dwa obiekty są w jakiejś zależności
+\item[SDO\_NN] szwraca najbliższe obiekty danego obiektu
+\item[SDO\_NN\_DISTANCE] odległość od obiektu zwróconego przez \emph{SDO\_NN}
+\item[SDO\_RELATE] bada występowanie określonej relacji przestrzennej (ale dokładnie)
+\item[SDO\_WITHIN\_DISTANCE] obiekty w pewnej odległości od danego obiektu
+\end{description}
+
+\subsubsection{Przykłady zapytań}
+\begin{itemize}
+\item W jakim państwie leży Praga?
+\item Czy Praga leży w tym samym państwie co Pilzno?
+\item Co leży bliżej Berlina: Gorzów Wielkopolski czy Szczecin?
+\item Czy Polska graniczy z Republiką Czeską?
+\item Jakie państwa sąsiadują z Polską?
+\end{itemize}
+
+\subsection{Implementacja w Oracle 10g/11g}
+Podstawowy typ: \emph{SDO\_GEMOETRY} przechowywany w schemacie użytkowika
+\emph{MDSYS}.  Jest to struktura zbudowana z prostych elementów takich jak
+łuki, proste, punkty -- reprezentuje pewien kształt. Jest niepodzielna z punktu
+widzenia operacji przestrzennych.
+
+\subsubsection{SDO\_GTYPE}
+Określa typ geometrii w formacie \emph{dltt}
+\begin{description}
+\item[d] liczba wymiarów
+\item[l] dotyczy systemu \ac{LRS}
+\item[tt] typ geometrii
+\begin{description}
+\item[00] unknown geometry
+\item[01] point
+\item[02] line or curve
+\item[03] polygon
+\item[04] collection
+\item[05] multipoint
+\item[06] multiline or multicurve
+\item[07] multipolygon
+\end{description}
+\end{description}
+\href{http://download.oracle.com/docs/cd/B10501\_01/appdev.920/a96630/sdo\_objrelschema.htm}{SDO\_GEOMETRY in Oracle}
+
+\subsection{Standard SQL/MM Part 3: Spatial}
+
+\newpage
 \section{Akronimy}
 \begin{acronym}
   \acro{2PL}{Two-Phase Locking}
   \acro{ACID}{Atomicity, Consistency, Isolation, Durability}
   \acro{B--Tree}{Balanced Tree}
+  \acro{GIS}{Geographic Information System}
   \acro{ISAM}{Index Sequential Access Method}
+  \acro{LRS}{Linear Referencing System}
+  \acro{LRU}{Least Recently Used}
   \acro{MTTF}{Mean Time To Failure}
   \acro{RAID}{Redundant Array of Independent Disks}
   \acro{SQL}{Structured Query Language}
