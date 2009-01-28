@@ -755,116 +755,148 @@ Stany transakcji:
 
  Gdy nastąpi awaria, to tranakcja zostaje w stanie dowolnym (!)
  Po restarcie SZBD przegląda niedokończone transakcje i doprowadza je do końca
+\end{comment}
 
-W jaki sposób zapewnić transakcyjność?
+\subsubsection{W jaki sposób zapewnić transakcyjność?}
+\begin{itemize}
+  \item shadow database: kopiujemy bazę, i po udanej transakcji usuwamy starą bazę i wskaźnik wskazuje na nową
+  \begin{itemize}
+    \item prosta implementacja
+    \item nieefektywna (kopiowanie \emph{całej} bazy danych?!)
+    \item krótkie transakcje czekają na jedną długą
+  \end{itemize}
+  \item algorytmy zapewniające niepodzielność i trwałość
+  \item metody pozwalające odtworzyć stan bazy w przypadku awarii, powszechnie stosujemy system logów
+\end{itemize}
+\subsubsection{Awarie transakcji}
+\begin{itemize}
+\item użytkownik -- rollback (jawnie)
+\item serwer -- na przykład naruszenie warunku integralnościowego
+\item awarie aplikacji (awaria połączenia itp.)
+\item awarie na poziomie serwera baz danych
+\begin{itemize}
+  \item system crash (utrata danych w pamięci)
+  \item uszkodzenie dysku (utrata danych na dysku)
+  \end{itemize}
+\end{itemize}
 
- * shadow database: kopiujemy bazę, i po udanej transakcji usuwamy starą bazę i wskaźnik wskazuje na nową
-   (izolacja: po kolei)
-   - prosta implementacja
-   - nieefektywna (kopiowanie _całej_ bazy danych?!)
-   - krótkie transakcje czekają na jedną długą
+\begin{description}
+  \item[INPUT(X)] blok z dysku zawierający element X jest kopiowany do pamięci
+  \item[READ(X, t)] jeżeli w pamięci nie ma bloku X, to INPUT(X), następnie t := x
+  \item[WRITE(X, t)] jeżeli bloku zwierającego X nie ma w pamięci to INPUT(X), następnie X := t
+  \item[OUTPUT(X)] zawartość bufora kopiowania na dysk
+\end{description}
 
- * algorytmy zapewniające niepodzielność i trwałość
-   Metody pozwalające odtworzyć stan bazy w przypadku awarii, powszechnie stosujemy system logów.
-   - awarie transakcji:
-    * użytkownik - rollback (jawnie)
-    * serwer - na przykład naruszenie warunku integralnościowego
-   - awarie aplikacji
-    * awaria połączenia itp
-   - awarie na poziomie serwera baz danych
-    * system crash (utrata danych w pamięci)
-    * uszkodzenie dysku (utrata danych na dysku)
+\begin{tabular}{r|c|c|c|c|c}
+           & t  & MA & MB & DA & DB \\
+\hline
+READ(A, t) & 8  & 8  &    & 8  & 8 \\
+t := t * 2 & 16 & 8  &    & 8  & 8 \\
+WRITE(A, t)& 16 & 16 &    & 8  & 8 \\
+READ(B, t) & 8  & 16 & 8  & 8  & 8 \\
+t := t * 2 & 16 & 16 & 8  & 8  & 8 \\
+WRITE(B, t)& 16 & 16 & 16 & 8  & 8 \\
+OUTPUT(A)  & 16 & 16 & 16 & 16 & 8 \\
+OUTPUT(B)  & 16 & 16 & 16 & 16 &16 \\
+\end{tabular}
 
-   1. Akcje podejmowanie podczas normalnego wykonywania się transkcji
-   2. Akcje podejmowane po awarii w celu odtworzenia stanu bazy
+\subsubsection{Logi}
+\paragraph{Struktura}
+\begin{description}
+  \item[$<$START T$>$] rozpoczęcie transakcji T
+  \item[$<$T, X, v$>$] T -- transakcja, X -- el. danych, v -- wartość przed modyfikacją
+  \item[$<$COMMIT T$>$] zakończenie transakcji
+\end{description}
 
-   INPUT(X) -- blok z dysku zawierający element X jest kopiowany do pamięci
-   READ(X, t) -- jeżeli w pamięci nie ma bloku X, to INPUT(X), następnie t := x
-   WRITE(X, t) -- jeżeli bloku zwierającego X nie ma w pamięci to INPUT(X), następnie X := t
-   OUTPUT(X) -- zawartość bufora kopiowania na dysk
+Log może służyć do operacji undo (wycofania transakcji)
 
-              | t  | MA | MB | DA | DB | LOG
-   READ(A, t) | 8  | 8  |    | 8  | 8  | <START...>
-   t := t * 2 | 16 | 8  |    | 8  | 8  |
-   WRITE(A, t)| 16 | 16 |    | 8  | 8  |
-   READ(B, t) | 8  | 16 | 8  | 8  | 8  |
-   t := t * 2 | 16 | 16 | 8  | 8  | 8  |
-   WRITE(B, t)| 16 | 16 | 16 | 8  | 8  |
-   OUTPUT(A)  | 16 | 16 | 16 | 16 | 8  |
-   OUTPUT(B)  | 16 | 16 | 16 | 16 |16  |
+\paragraph{Implementacja}
+\begin{itemize}
+  \item rekord logu dla każdej operacji
+  \item rekord logu musi osiągnąć dysk zanim zmodyfikowany bufor zostanie zapisany
+     na dysk (\ac{WAL})
+  \item przed commitem wszystkie operacje muszą być zapisane na dysk
+\end{itemize}
 
-  LOG:
-  <START T> -- rozpoczęcie transakcji T
-  <T, X, v> -- T -- transakcja, X -- el. danych, v -- wartość przed modyfikacją
-  <COMMIT T> -- zakończenie transakcji
-  Log może służīć do operacji undo (wycofania transakcji)
-
-  Rozwiązanie logów:
-   * rekord logu dla każdej operacji
-   * rekord logu musi osiągnąć dysk zanim zmodyfikowany bufor zostanie zapisany
-     na dysk (WAL -- write ahead logging)
-   * przed commitem wszystkie operacje muszą być zapisane na dysk
-
-  W czasie awarii:
-   * <ABORT T> do logu
-   * jeśli transakcja zapisuje informacje na dysk dopiero po zakończeniu
+\paragraph{Podczas awarii}
+\begin{itemize}
+  \item wpisz $<$ABORT T$>$ do logu
+  \item jeśli transakcja zapisuje informacje na dysk dopiero po zakończeniu
      wszystkich operacji to nie trzeba robić odtwarzania w przypadku błędu
      (wystarczy abort do logu)
-   * transakcje niekompletne: jeśli jest <START T> a nie ma <COMMIT T> ani <ABORT T>
-   * podczas procesu odtwarzania awaria nie jest problemem: po prostu powtarzamy proces
+  \item transakcje niekompletne: jeśli jest $<$START T$>$ a nie ma $<$COMMIT T$>$ ani $<$ABORT T$>$
+  \item podczas procesu odtwarzania awaria nie jest problemem: po prostu powtarzamy proces
      odtwarzania
+\end{itemize}
 
-  Operacja odtwarzania wymaga przeglądnięcia całego logu
-  Rozwiązanie: co jakiś czas CHECKPOINT, czyli:
-    * zatrzymaj ``nowe transakcje``
-    * poczekaj aż bieżące transakcje się skończą (COMMIT lub ABORT)
-    * zapisz bufory na dysk
-    * zapisz informacje o CHECKPOINTcie do logu (<CHECKPOINT>)
-  Wtedy możemy zacząc odwarzanie od CHECKPOINTu. Typowy system ma CHECKPOINT co kilka minut.
+\paragraph{Checkpoint}
+Operacja odtwarzania wymaga przeglądnięcia całego logu. Rozwiązaniem są \emph{checkpointy}.
+\begin{itemize}
+  \item zatrzymaj ``nowe transakcje``
+  \item poczekaj aż bieżące transakcje się skończą (COMMIT lub ABORT)
+  \item zapisz bufory na dysk
+  \item zapisz informacje o CHECKPOINTcie do logu ($<$CHECKPOINT$>$)
+\end{itemize}
+Wtedy możemy zacząc odwarzanie od \emph{checkpointu}. Typowy system ma checkpoint co kilka minut.
 
-  Minusy algorytmu CHECKPOINT:
-    * żadnych nowych transakcji w tym czasie
-    * czekanie na koniec transakcji
+\subparagraph{Minusy algorytmu CHECKPOINT}
+\begin{itemize}
+  \item żadnych nowych transakcji w tym czasie
+  \item czekanie na koniec transakcji
+\end{itemize}
 
   Rozwiązanie:
-  NONQUISCENT CHECKPOINT
-   * <START CHECKPOINT(AT1, AT2...)> (ATN - aktywana transakcja N)
-   * nie wstrzymujemy nowych transakcji
-   * po zakończeniu transakcji z listy <END CHECKPOINT>
+\paragraph{Nonquiscent checkpoint}
+\begin{itemize}
+  \item $<$START CHECKPOINT(AT1, AT2, \ldots)$>$ (ATN -- aktywana transakcja N)
+  \item nie wstrzymujemy nowych transakcji
+  \item po zakończeniu transakcji z listy $<$END CHECKPOINT$>$
+\end{itemize}
 
-   Awaria w trakcie CHECKPOINTu, trzeba:
-    * odtworzyć transakcje, które rozpoczęły się po <START CHECKPOINT>
-    * wszystkie transakcje z listy przy <START CHECKPOINT>
+Awaria w trakcie \emph{checkponitu}, trzeba:
+\begin{itemize}
+  \item odtworzyć transakcje, które rozpoczęły się po $<$START CHECKPOINT$>$
+  \item wszystkie transakcje z listy przy $<$START CHECKPOINT$>$
+\end{itemize}
 
-   Awaria po <END CHECKPOINT>
-    * tylko transakcje po <START CHECKPOINT>
+Awaria po $<$END CHECKPOINT$>$
+\begin{itemize}
+  \item odtworzyć transakcje po $<$START CHECKPOINT$>$
+\end{itemize}
 
-  UNDO:
-   * pewne transakcje które wyglądają jakby były zaitwerdzone mogą zostać wycofane
-   * COMMIT dopiero po zapisaniu wszystkich danych na dysk
-   * problem w przypadku odtwarzania backupu
+  %UNDO:
+   %* pewne transakcje które wyglądają jakby były zaitwerdzone mogą zostać wycofane
+   %* COMMIT dopiero po zapisaniu wszystkich danych na dysk
+   %* problem w przypadku odtwarzania backupu
+%
+  %REDO:
+   %* wymaga modyfikowania ...
 
-  REDO:
-   * wymaga modyfikowania ...
+  Redo/undo logging.
+  \begin{itemize}
+    \item rekord logu zawiera starą i nową wartość: $<$T, X, v, w$>$
+    \item rekord logu dla każdej operacji
+    \item zapisz log na dysk zanim bufor X zostanie zapisany na dysk
+    \item zapisz log po każdym $<$COMMIT T$>$
+  \end{itemize}
 
-  Redo/undo logging:
-   * rekord logu zawiera starą i nową wartość: <T, X, v, w>
-   * rekord logu dla każdej operacji
-   * zapisz log na dysk zanim bufor X zostanie zapisany na dysk
-   * zapisz log po każdym <COMMIT T>
+  \begin{itemize}
+    \item rolling back
+    \begin{itemize}
+      \item konstruuj listę zatwierdzonych transakcji -- S
+      \item jeśli transakcja nie jest na liście S wykonaj UNDO
+    \end{itemize}
+    \item rolling forward
+    \begin{itemize}
+      \item wykonaj operację REDO dla transakcji z listy S
+    \end{itemize}
+  \end{itemize}
 
-   * rolling back:
-    - konstruuj listę zatwierdzonych transakcji -- S
-    - jeśli transakcja nie jest na liście S wykonaj UNDO
-   * rolling forward
-    - wykonaj operację REDO dla transakcji z listy S
+    %..........dbdump.................lastneededundo................checkpoint
+    %not needed             not needed                    not needed
+     %for media         for undo after                for redo after
+      %recovery         system failure                system failure
 
-    ..........dbdump.................lastneededundo................checkpoint
-    not needed             not needed                    not needed
-     for media         for undo after                for redo after
-      recovery         system failure                system failure
-
-\end{comment}
 \subsection{Isolation}
 \begin{comment}
 
@@ -1311,5 +1343,6 @@ Określa typ geometrii w formacie \emph{dltt}
   \acro{RAID}{Redundant Array of Independent Disks}
   \acro{SQL}{Structured Query Language}
   \acro{SZBD}{System Zarządzania Bazą Danych}
+  \acro{WAL}{Write-Ahead Logging}
 \end{acronym}
 \end{document}
