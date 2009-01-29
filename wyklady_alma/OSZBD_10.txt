@@ -1,0 +1,47 @@
+Wykład 05.01.2009
+za tydzień 12.01.09 nie ma wykładu
+
+algorytmy wykoniania zapytania sql wybiera i optymilizuje serwer, my nie mamy na to wpływu
+robi to na podstawie bazy statystyk
+myli się gdy informacje statystyczne są niekompletne
+
+wykonanie zapytania sqlowego przez serwer
+query ->parser->relational algebra->optimilization->execute query->data engine->result
+
+iformacje statystyczne (meta dane opisujące baze danych):
+liczba krotek
+liczba bloków
+rozmiar krotki
+liczba krotek w bloki
+itp. itd.
+
+kiedy jest potrzebne sortowanie
+	order BY DISTINCT
+	i np. join jest bardziej efektywny na posortowanych danych
+
+sortowanie vs uporzadkownie
+	uporzadkowanie może być zrealizowane przy pomocy indeksów (uporzadkowanie logiczne)
+	czasem mimo tego że dostepne jest takie uporzadkowanie logiczne warto posortowac dane
+	
+sortowanie
+	w RAM (nie zawsze możliwe)
+	na dysku
+		RAM + dysk
+		efektyność procesu zależy od tego jak duży obszar roboczy zostanie przydzielny w pamięci operacyjnej
+		algorytm external sort-merge
+		
+External sort-merge
+	zakąłdamy że mamy M bloków zarezerwowanych w pamięci na sortowanie
+	sortowanie jest wykonywane w nast. fazach:
+		sort - tworzymy posortowane paczki o rozmiarze M
+		merge na tych paczkach
+	miernikiem kosztu jest liczba dostępów do dysku
+	
+Algorytmy realizacji operacji JOIN
+	nested-loop join
+	block nested-loop join
+	indexed nested-loop join
+	merge join
+	hash join
+	
+	wybór algorytmu bazuje na analizie blokowej

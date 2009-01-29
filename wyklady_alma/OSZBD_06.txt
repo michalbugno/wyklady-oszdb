@@ -1,0 +1,87 @@
+wykład 17.11.08
+
+---------------------------------------------------------------------------
+Tranzakcja
+-tranzakcje to programy które czytają iewentualnie modyfikuja dane
+-tranzakcja jest operacją o charakterze atomowym ( z logicznego pkt widzenia)
+-tranzakacja musi widziec baz w stanie "spójnym"
+-podczas wykonywania trakzakcji baza danych może byc przez chwile neispójna
+-po zakończeniu tranzakcji baza musi być spowrotem spójna
+-zagadnienia do rozważenia:
+	*możliwość awarii systemu podczas wykonywania tranzakcji
+	*kilka tranzakcji jednoczenie
+-ACID
+	*Consistency - spójność
+	*Atomicity - niepodzielność
+	*Durability - trwałość
+	*Izolation - izolacja
+
+----------------------------------------------------------------------------
+Stany w którym moze sie znajdować tranzakcja:
+   *********************************************
+   *active  -> "partially commited" -> commited*
+   *  V					V					   *
+   *  0		->	 	  failed 		-> aborted *
+   *********************************************
+   
+-active - wykonywana
+-partially commited - częsciowo zatwierdzona
+-failed
+-aborted
+-commited
+
+----------------------------------------------------------------------------
+Jak zapewnić ACID - podejście 1:
+Atomicity, Durability
+-shadow database
+Costintency
+-sprawdzamy przed commitem poprawność bazy
+Izolation
+-wykonujemy w kolejce operacje
+to jest proste w realizacji ale totalnie nieefektywne...
+
+Jak zapewnić ACID - podejście 2:
+Atomicity, Durability
+-rozwiazanie pozwalające odtworzyć stan bazy sprzed tranzakcji w przypadku awarii oparte o system logów
+
+----------------------------------------------------------------------------
+Jakie awarie:
+-awaria tranzakcji
+	*tranzakcja zrywana przez użytkwonika (rollback)
+	*zerwana przez serwer np. w przypadku zaburzenia integralności
+-awaria aplikacji -> serwer zrywa tranzakcje
+-awaria na poziomie serwera baz danych (hardware)
+	*system crash (utrata danych z RAMu np. kill proces)
+	*uszkodzenie dysku (utrata trwałych danych)
+
+Techniki, algorytmy pozawalające zachować spójność bazy dnaych oraz niepodzielność i trwałość tranzakcji
+-akcje wykonywane podczas normalnego wykonywania tranzakcji
+-akcje wykonywane podczas awarii
+
+Operacje na danych:
+-input - skopijuj z dyku do ramu
+-read - jesli nie ma bloku w pamięci zrób input i zczytaj
+-write - jesli nie ma bloku w pamięci zrób input i podstaw
+-output -skopijuj z rmau do dyku
+
+Logowanie
+-najpierw log później tranzakcja trwała
+-rakord logu dal każdej operacji
+-rekord logu musi osiągnąc dysk zanim zmodyfikowany bufor zostanie zapisany na dysk
+-przed commitem musi być zapisany log
+
+Co w przypadku awarii tranzakcji?
+-<ABORT> do logu
+-rollback
+
+Odtwarzanie
+-przeglądanie logu i znajdowanie tranzakcji zaczętych a nei skończonych
+-jeśli tranzakcja <T, X, v> jest kompletna wykonaj:
+	Write(X,v)
+	Output(X)
+-awaria podczas odtwarznia, nic sie nie dzieje, robimy odtwarzanie jeszcze raz
+-awaria wymaga przeglądnięcia całego logu
+	*wykonanie CHECKPOINT czyli wstrzymaj nowe trazakcje i zakończ poprzednie, zapisanie wszystkiego na dysk
+	*wystarczy wtedy przeglądnąć log tylko do CHECKPOINT
+	*jest czasochłonny (wykonywany co kilka, kilkanaście sekund)
+	*START-END CHECKPOINT - szybszy, bez przestoi

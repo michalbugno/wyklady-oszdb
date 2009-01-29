@@ -1,0 +1,113 @@
+Jak zapenic serializowalność
+	test-czy szeregowlanie jest serializowalne
+	problem zlożony obliczeniowo
+	przestrzeganie pewnych reguł podczas wykonywania tranzakcji
+Jeśli serializacja to wg jakiego punktu?:
+	dowolnego
+	moment commitu
+	moment rozpoczęcia tranzakcji
+Co w przypadku awarii tranzakcji?
+
+Trzeba nałozyć dodatkowe reguły i ograniczenia na plany uzyskane zgodnie z regułami zapewniającymi serializowalność
+Dopuszczalne uszeregowania muszą być odtwarzalne
+	reguła zapeniająca odtwarzalność:
+	jeśli Tj czyta dane zapisane przez Ti to COMMIT Tj musi być po COMMIT Ti
+Nawet jeśli uszeregowanie jest odtwarzalne to może wymagać "kaskadowego wycofania"
+	reguła zapewniająca że odtwarzanie jest wolne od kaskadowego wycofania:
+	jeżeli Tj czyta dane zapisane przez Ti to Ti musi sie zakończyć zanim Tj przeczyta dane
+
+SQL poziomy izolacji:
+	serializable - pełna szeregowalność
+	repetable read - powtarzalność odczytu na poziomie pojedyńczej krotki
+	read commited - zapewnienie odczytu danych po commicie (nie te przed commitem)
+	read uncommited - czytam nawet to co jest nowe a nie zacommitowane
+
+	
+Jak zapenić serializowalnść:
+
+Protokoły bazujące na zamkach
+Zamek (lock) - mechanizm kontrolujący róznowczesny dostęp do danych
+Moduł zarządzający równoczesnym dostępem
+	tranzakcja rząda założenia zamka
+	tranzakazja moze kontynuować wykonania tylko gdy zamek zostanie założony
+	w przeciwnym przypadku czeka
+	
+Kiedty zakładać zamki
+Kiedy je zwalniać
+Na jakie struktury je zakładać
+Potencjalne problemy:
+	deadlock
+	zagłodzenie
+	zapewnienie serializowaności
+	zapewneinie odpowiedniego poziomu ilozolacji
+	
+Locking protocol: zestaw regół dotyczących zakładania zamków (stosowany przez wszystkie tranzakcje)
+
+Dwufazowe zakładanie zamków (2PL - Two phrase locking protocol)
+	Faza zakładania zamków
+		może zakładać zamki
+		nie może zwalniać ale moze dokonać konwersji z S (share) do X  (exclusive)
+	Faza zwalniania zamków
+		może zwalniać
+		nie może zakładać
+Zapewnia serializowalność wg punktu założenia ost. zamka
+Nie zabezpiecza przed zakleszczeniami
+Może wymagać kaskadowego wycofania
+
+Strict Two Phrase Locking
+Tranzakacja zwalnia zamki typu X dopiero po swoim zakończeniu
+zabezpiecza przed kaskadowym wycofaniem
+zapenia serializowalność wg pkt założenia ost. zamka (tak jak w poprzednim przypadku)
+
+Rigorous Two Phrase Locking - tranzakcja zwalnia wszsytkie swoje zamki dopiero po zakończeniu
+Serializowalność wg punktu zakończenia tranzakcji (commit)
+
+Większość systemów bazodanowych implementuje jeden z tych mechnizmów (strict lub rigorous)
+Serwer jest odpowiedzialny za zakładanie zamków
+
+Na jakie struktury zakładać zamki:
+	baza
+	tablica
+	wiersz
+	strona
+
+Inne metody zarządania równoczesnym dostępem:
+	metody bazujące na grafach
+	metody bazujące na znacznikach czasowych
+	metody bazujące na walidacji możliwości wykonania tranzakcji - optymistyczne metody zarządznaia równoczenym dostępem)
+	metody wykorzystujące wielowersyjność danych
+		wielowersyjność + znaczniki czasowe
+		wielowersyjność + 2PL
+
+Metody bazujące na grafach:
+	mogą stanowić alternatywę dla Two Phrase Lock
+	wymagają uporządkownaia zbioru danych
+	Na strukturze drzewa:
+		tylko zamki X
+		pierwszy zamek w dowolnym miejscu drzewa
+		zamki moga być zwalniane w dowolnym momencie
+		zamek może być założnony jeśli jest zamek na rodzicu
+		zapewnia conflict serializibility
+		jest wolny od zakleszczeń
+		można w trakcje tranzakcji walniać zasoby
+		nie jest wolny od kaskadowego wycofania
+		może wymagać blokowania większej ilości danych niż są wymagane przez tranzakcjie
+		
+Metody bazujące na znacznikach czasowych:
+	z każdą tranzakcją związany jest znacznik czasowy
+	protokuł zapewnia serializowalność wg wartości znacznika czasowego
+	wymagania:
+		dla każdego przechwujemy 2 znaczniki czasowe (timestamp zapisu i odczytu)
+	protokuł zapewnia ze operacje R i W będace w konflikcie są wykonane w kolejności wyznaczonej przez znaczniki czasowe
+	
+Thomas write Rule
+
+Optymistyczne metody zarzadzania równoczenym dostępmw
+	trzy fazy:
+		czytania
+		walidacji
+		zapisu
+	duzy stopień współbiernzości
+	tranzakcje nei muszą czekać
+	metody wykonują sie zakładając że wsyzstko bedzie ok
+	protokuł bazuje na założeniu że konflikty są żadkie

@@ -1,0 +1,58 @@
+w pierwsyzm tygodniu nowego roku wykład z PSów to OSZBD
+
+***********************************
+c.d. wykład 8
+
+zarzšdzanie równoczesnym dostępem
+	alg. bazujšce na blokadach
+	alg. bazujšce na grafach
+	alg. bazujšce na znacznikach czasowych
+	alg. bazujšce na walidacji możliwoci wykoniania tranzakcji (optymistyczne metody zarzšdzania równoczesnym dostępem)
+	alg. bazujšce na wielowersyjnoci danych
+		wielowersyjnoć + znaczniki czasowe
+		wielowersyjnoć + 2PL
+		
+schematy zarzšdzania równoczesnym odstępem wykorzystujšce "wersje danych"
+	multiversion timestamp ordering
+	multiversion two-phase locking
+w przypadku modyfikacji wartoci Q system przechowuje (przez pewien czas) poprzedniš wartoc Q
+każda modyfikacja tworzy nowš wersje bazy danych
+
+inne rozwišzanie:
+	połšczenie wielowersyjnoci i 2PL
+	tranzakcje READONLY i UPDATE
+	tranzakcje modyfikujšce dane stosujš się do reguł protokołu 'rigorous two-phrase locking'
+	z każdym elementem danych kojarzony jest pojedyńczy znacznik czasowy (fs_counter)
+	
+******************************************************
+Basic steps in query processing
+	parsing and translation
+	optimilization
+	evaluation
+	
+generacja planu:
+	plan poczatkowy
+		postać porednia
+			np. operacje algebry relacji
+			operacje na poziomie fizycznym
+		zwykle mało efektywny
+	generacja kolejnych planów
+		przekształcenia algebraiczne
+			opercja na poziomie fizycznym
+	oszacowanie kosztów każdego z planów
+		rozmiary poszczególnych relacji
+		rozmiar zbiorów porednich
+		rozmiar zbioru wynikowego
+		indeksy, rodzaj indeksów
+		koszt operacji szacowany na podstawie informacji statystycznych
+	wybór planu o najmniejszym koszcie (prognozowanym koszcie)
+		
+miara kosztów
+	wykożystanie CPU
+	wykożystanie RAM
+	narzuty komunikacyjne
+	operacje dyskowe (operacje we/wy)
+		majš największy wpływ na koszt operacji (miarš jest liczba zapisów/odczytów)
+	uproszczenia
+		koszt zależy od puli buforów
+		mechanizm funkcjonowania cashu

@@ -898,41 +898,44 @@ Awaria po $<$END CHECKPOINT$>$
       %recovery         system failure                system failure
 
 \subsection{Isolation}
-\begin{comment}
+Najprostsze rozwiazanie: seryjne wykonywanie transakcji.
+Trudniej: równolegle (ale szybciej)
 
-Najprostsze rozwiazanie: seryjne wykonywanie transakcji
-Trudniej: rownolegle (szybkosc)
-
-Transakcja to:
- * I/O + CPU
- * typy: duzo krotkich transakcji lub "dlugie" + "krotkie" -- potrzebne rozwiazanie!
-
-Integralność danych
+\subsubsection{Właściwości transakcji}
 \begin{itemize}
-\item transakcja zapewnia integralność
-\item seryjne transakcje -- nie ma problemu
-\item równoległe transakcje -- problem
+  \item zużycie I/O
+  \item zużycie CPU
+  \item różnorodność: dużo krótkich transakcji lub ``długie`` + ``krotkie`` -- potrzebne rozwiązanie
 \end{itemize}
 
-Problemy wynikające z równoczesnego dostępu:
+\subsubsection{Integralność danych}
 \begin{itemize}
-\item problem utraconej modyfikacji (lost update)
-\item zależność od niezatwierdzonej wartości (dirty read, uncommited dependency)
-\item niespójna analiza (inconsistent analysis, nonrepeatable read) -- transakcja dwukrotnie odczytuje
+  \item transakcja zapewnia integralność
+  \item seryjne transakcje -- nie ma problemu
+  \item równoległe transakcje -- problem
+\end{itemize}
+
+\paragraph{Problemy wynikające z równoczesnego dostępu}
+\begin{itemize}
+  \item problem utraconej modyfikacji (lost update)
+  \item zależność od niezatwierdzonej wartości (dirty read, uncommited dependency)
+  \item niespójna analiza (inconsistent analysis, nonrepeatable read) -- transakcja dwukrotnie odczytuje
       tą samą jednostkę danych (wiersz tabeli) i dostaje różne dane (w międzyczasie była modyfikacja)
-\item phantom read -- odczyt danych, które pojawiły się podczas transakcji (INSERT)
+  \item phantom read -- odczyt danych, które pojawiły się podczas transakcji (INSERT)
 \end{itemize}
 
 Zapewnienie wszystkich reguł jest \emph{bardzo} kosztowne i zazwyczaj są pewne odstępstwa.
 
-Poziom izolacji -- pewne ustawienie, które definiuje jakie zapewniamy rozwiązania izolacji (trzeba
-wybrać między kosztem obsługi a zapewnioną izolacją)
+\subsubsection{Poziom izolacji}
+Pewne ustawienie, które definiuje jakie zapewniamy rozwiązania izolacji (trzeba
+wybrać między kosztem obsługi a zapewnioną izolacją).
 
+\begin{comment}
 \begin{itemize}
-\item transakcje to programy
-\item możliwe różne uszeregowanie operacji
-\item trudno analizować czy transakcje zależą od siebie czy nie
-\item ograniczamy tą analizę do READ i WRITE
+  \item transakcje to programy
+  \item możliwe różne uszeregowanie operacji
+  \item trudno analizować czy transakcje zależą od siebie czy nie
+  \item ograniczamy tą analizę do READ i WRITE
 \end{itemize}
 
 Przykład:

@@ -1,0 +1,88 @@
+Wykład 24.11.08
+Tranzakcje - Izolacja
+Zarządznie równoczesnym dostępem do bazy
+********************************************
+Jak wykonujemy 2 tranzakcja T[i] i T[j] to;
+	-T[j] sie zaczeła jak T[i] sie skończyła
+	-T[i] sie zaczeła jak T[j] sie skończyła
+Najprostrzym mechanizmem izolacji jest seryjne wykonywanie tranzakcji
+jednkaże jest nieefektywne
+	-I/O - CPU
+	-dużo krótkich tranzakcji
+	-długie/krótkie tranzakcje naraz
+Seryjne wykonywanie tranzakcji zapewnia integralność danych
+Problemy związane z równoczesnym dostępem do danych:
+	-problem utraconej modyfikacji
+	-zalezność od niezatwierdzonej wartości
+	-niespójna analiza
+	-phantom read (zmiana danych podczas wykonywania tranzakcji)
+Tranzakcje to programy
+Możliwe rózne uszegerowanie operacji (plany wykonania)
+Trudno analizaowac wszystkie tranzakcje w celu stwierdzeni wzajemnych zależności
+Można ograniczyć analizę do operacji READ/WRITE
+Zmiana kolejności tranzakcji może mieć wpływ na wynik!
+Które plany wykonania tranzakcji są 'dobre'? - zarządzanie przez serwer
+Konflikty:
+	-jeśli 2 tx są wykonywane na różnych danych można je zamieniać
+	-jeśli do tych samych to niezawsze można
+	-2 tx są w konflikcie jeśli odnosza sie do tych samych danych i conajmniej jedna z nich to WRITE
+Plan jest serializowalny jeśli jest zgodny z planem sekwencyjnym.
+Plany są równoważne jeśli jeden można zamienić na drugi wykonując dozwolone zamiany.
+Plan jest szeregowlany ze wzglądu na konflikt jeśli jest on zgodny z planem sekwencyjnym (seryjnym).
+Można wskazać plan który daje te same wyniki co plan sekwencyjny ale nie jest "conflict serializable"
+ale żeby to stwierdzić trzeba analizować operacje wykonywane poprzez poszczególne trnazakcje.
+Innym model szeregowalności:
+	-także odnszączy się do R/W
+	-ale mniej restrykcyjny
+Szeregowalnośc widoków
+	-"view serializable"
+	-"view eqivalent"
+Szeregowlanośc widoków:
+	1. Dla każdej danej Q jeśli T czyta początkowa wartość Q w S to musi czytać warośc początkowa w S'
+	2.?
+	3.?
+	?Co zapewniają?
+każdy plan ktory jest "conflict serializable" jest także "view serializable"
+Przykład:
+	-plan jest równowany ze względu na widok
+	-jest seregowalny ze względu na widok
+	-nie jest szeregowlany ze względu na konflikt
+	-(zawiera ślepe zapisy)
+Klasy szeregowalności:
+*****************************
+*	All						*
+*	*********************** *
+*	*	View			  * *
+*	*	***************** * *
+*	*	*	Conflict	* * *
+*	*	***************** * *
+*	*********************** *
+*****************************
+
+Problem błędy (awarii sprzętu)
+Commit to nie tylko write, to także brak możliwości odtworzenia danych
+Uszeregowanie odtwarzalne "recoverable"
+Jeśli T[j] czyta dane zapisane przez T[i] to COMMIT T[j] musi byc po COMMIT T[i]
+Jeśli nawet plan jest odtwarzalny to odtwarzanie może wymagać wycofania (a wcześniej zerwania) wielu tranzakcji (wycofanie kaskadowe)
+Poziomy izolacji:
+	-serializable (pełna izolacja)
+	-repatable read (powtarzalny odczyt, napoziomie wiersza nie zbioru)
+	-read commited
+	-read uncommited
+Jak zapewnić szeregowalność?
+	-problem wydajności
+	-przestrzeganie reguł
+Jeśli szeregować to według jakiego punktu:
+	-moment rozpoczęcia tx
+	-moment COMMITU - najlepsze
+	-dowolnego
+Zarządzenie równoczesnym dostepem:
+	-two phase locking (2PL)
+		*strict
+		*rigorous
+	-tree
+	-timestamp
+	-validation
+	-multiversion
+		*timestamp
+		*two phase locking

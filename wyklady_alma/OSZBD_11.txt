@@ -1,0 +1,92 @@
+Wykład 07.01.2009
+Zarządzenie danymi przestrzennymi
+	zastosowania
+		GIS-geographic informacion system
+		architektura
+		planowanie przestrzenne
+		transport
+		nawigacja
+		zarządznie sytuacjami kryzysowymi
+		CAM
+		CAD
+	model danych przestrzennych
+		terminologia
+		model danych i metadane
+		
+przetwarzanie danych przestrzennych
+	dane->pozyskiwnie->przechowywanie->wizualizacja
+							V
+						 analiza
+						 
+rastrowy model przechowywania danych przestrzennych opiera się na zapisie macierzowym
+	informacje o nim zapisane są przez wartości w macierzy
+	jeśli infroamcje są duże, jest wielkie zapotrzebowanie na pamięć
+	figury geometrzyczne opisane sa przy pomocy pkt.w obranym układzie odniesienia
+	punkty sa ze soba powiazane tworząc obiekty geometryczne (tworzące kształty)
+
+model wektorowy - hierarchia obiektów
+					warstwa przestrzenna
+							|
+	------------------------------------------------
+	|						|						|
+geometria				geometria				geometria
+							|
+	------------------------------------------------
+	|						|						|
+element					element					element
+							|
+	---------------------------------------------
+	|			 |				|				|
+"punkt" 	"ciąg lini" 	"wilokąt" 	"złożony wilokąt"
+
+warstwa przestrzenna
+	jest zbiorem geometrii posiadających podobny zestaw atrybutów (np. związany znaczeniowo)
+przykłady warst przestrzennych
+	mapy krajów, miast
+	sieci dróg
+	sieci wodociągów, itp
+	
+geometria
+	jest struktura przestrzenną zbudowaną ze zbioru prostych elementow geometrzycznych takich jak łuki proste czy pkt.
+	reprezentuje pewien kształw
+	jest niepodzielna z pkt. widzenia większości operacji geomtrzycnzych
+	jest reprezentowana przez obiekt typu SDO_GEOMETRY (oracle)
+	
+składowe geometrii - fragment jej struktury
+z regóły nie jest przetwarzany w oderwaniu od geometrii
+elemnty moga być różnego typu
+
+Typ obiektowy SDO_GEOMETRY - pozawala na zdefioniowanie i przechowywanie geometrii
+przechowywany w schemacie użytkownika MDSYS
+	atrybut SDO_GTYPE określa typ geometrii w formacie dltt
+		d - liczba wymiarów wykożystywnaych do opisu geometrii
+		l - dotyczy systemu LRS (linear referencing system)
+		tt- typ geometrii
+	atrybut SDO_POINT zoptymiliozowana metoda przechowywania pojedyńczych punktów przestrzennych
+		jest definowany za pomoća typu SD_POINT_TYPE
+	atrybut SDO_ELEM_INFO zawiera opis poszczególnych elementów wchodzących w skład geometrii
+		każdy element opisywany jest przez 3 paramtery
+			SDO_STARTING_OFFSET - pozaycja pierwsze koordynaty w SDO_ORDINATES
+			SDO_ETYPE - definiujący typ elementu
+			SDO_INTERPRETATION - posiada różne znaczenia w zależności o typu elementu...
+	poszczególne kolumny typu SDO_GEOMETRY są dodatkowo opisywane przy pomocy metadanych
+	ideks przestrzenny umożliwia kożystanie z operatorów przestrzennych
+		użycie niekórych operatorów nie jest możliwe bez użycia indeksów przestrzennych
+	zapytanie przestrzenne jest wykonywane w 2 fazach
+		podczas pierwszej fazy z pełnego zbioru danych na podstawie aproksymacji na indeksie przestrzennym wybiernae sa te obiekty, które potencjalnie mogą spełniać warunki zapytania (to tkz. kandydaci)
+		druga faza - ?? :/
+	operator SDO_FILTER - wykożystuje pierwszą faze zapytania
+	operator SDO_RELATE - wykożystuje obie fazy zapytania dla dodatkwej weryfikacji danych
+	dane przestrzenne można prztwarzac za pomocą bardzo bogatego zioru operatorów:
+		SDO_FILTER - sprawdza zależność 2 obiektów
+			podstawowym i wymaganym parametrem jest querytype
+			wartości WINDOW i JOIN
+				WINDOW - porównianie pojedyńczej geometrii z kolumną w tabeli
+				JOIN - połączenie między 2 tabelami zawierającymi geometrię
+		SDO_NN - identyfikuje sąsiadów
+			parametr sdo_num_res określa liczbę obiektów z najbliższego sąsiedztwa jakie należy zwrócić w zapytaniu
+			parametr unit pozwala obliczyć (wyrazić) odległość przez operator SDO_NN_DISTANCE
+		SDO_NN_DISTANCE - odległości obiektów znalezionych przez SD_NN
+		SDO_RELATE - dokładniejszy filter
+			mask - jeden z dziewięciu operatorów opisujacych filter
+		SDO_WITHIN_DISTANCE - zbiór gemetrii znajdujących się w określonej odległości od obiektu
